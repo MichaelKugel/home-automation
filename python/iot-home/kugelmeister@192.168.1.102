@@ -1,0 +1,2741 @@
+New gather with 3 flask apps for dashboards - 31st Jan 2015
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND             CREATED             STATUS              PORTS                                            NAMES
+21ab69476451        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         About an hour ago   Up 4 minutes        8883/tcp, 1883/tcp, 192.168.1.106:8081->80/tcp   dashboard11         
+bf7b17256c2e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         About an hour ago   Up 3 minutes        1883/tcp, 8883/tcp, 192.168.1.106:8082->80/tcp   dashboard10         
+b030250cfe2b        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"         2 hours ago         Up 3 minutes        1883/tcp, 8883/tcp, 0.0.0.0:8080->80/tcp         dashboard7          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-3*[bash]
+        |        |-3*[docker---4*[{docker}]]
+        |        `-11*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd---sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 10:45:23 up 5 min,  1 user,  load average: 0.29, 0.22, 0.14
+Tasks:  72 total,   1 running,  71 sleeping,   0 stopped,   0 zombie
+%Cpu0  :   4.9/5.1    10[||||||                                               ]
+GiB Mem : 58.7/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   3.3m  0.0  1.8   0:06.87 S systemd
+   79 root      20   0   11.6m   3.8m  0.0  2.1   0:02.04 S  `- systemd-journal
+   98 root      20   0   10.5m   1.4m  0.0  0.8   0:00.47 S  `- systemd-udevd
+  120 root      20   0    3.1m   1.6m  0.0  0.8   0:00.11 S  `- systemd-logind
+  122 dbus      20   0    4.2m   1.5m  0.0  0.8   0:00.22 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.5m  0.0  0.3   0:00.10 S  `- rngd
+  125 avahi     20   0    3.3m   1.6m  0.0  0.9   0:00.18 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.5m  0.0  0.2   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.7m  0.0  0.4   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   1.2m  0.0  0.6   0:04.87 S  `- crond
+  130 root      20   0    6.5m   2.2m  0.0  1.2   0:00.10 S  `- sshd
+  267 root      20   0   10.7m   3.4m  0.0  1.9   0:01.05 S      `- sshd
+  274 root      20   0    3.4m   1.7m  0.0  0.9   0:00.19 S          `- bash
+  435 root      20   0    3.2m   1.2m  0.0  0.7   0:00.02 S              `- ga+
+  447 root      20   0    4.7m   1.4m 20.0  0.7   0:00.11 R                  `+
+  131 root      20   0    1.7m   0.5m  0.0  0.3   0:00.22 S  `- ifplugd
+  132 root      20   0  873.6m   9.4m  0.0  5.1   0:05.27 S  `- docker
+  317 root      20   0  816.8m   5.2m  0.0  2.8   0:00.22 S      `- docker
+  328 root      20   0    3.0m   1.6m  0.0  0.9   0:00.32 S      `- bash
+  358 root      20   0  816.8m   5.2m  0.0  2.8   0:00.21 S      `- docker
+  369 root      20   0    3.0m   1.6m  0.0  0.9   0:00.28 S      `- bash
+  400 root      20   0  816.8m   5.2m  0.0  2.8   0:00.23 S      `- docker
+  411 root      20   0    3.0m   1.6m  0.0  0.9   0:00.27 S      `- bash
+  133 root      20   0    7.4m   3.5m  0.0  1.9   0:03.17 S  `- haveged
+  146 root      20   0    1.8m   0.7m  0.0  0.4   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.7m  0.0  0.4   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.4m  0.0  0.2   0:00.01 S  `- dhcpcd
+  271 root      20   0    5.1m   2.0m  0.0  1.1   0:00.30 S  `- systemd
+  272 root      20   0    8.7m   1.0m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:00.05 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    6 root      20   0    0.0m   0.0m  0.0  0.0   0:00.06 S  `- kworker/u2:0
+    7 root      20   0    0.0m   0.0m  0.0  0.0   0:00.15 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   20 root      20   0    0.0m   0.0m  0.0  0.0   0:00.27 S  `- kworker/0:1
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   0:00.57 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   50 root      20   0    0.0m   0.0m  0.0  0.0   0:00.05 S  `- kworker/u2:2
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+   69 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:2
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          26          78           0          79          76
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2775068   3092400  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     324     94352   1% /dev/shm
+tmpfs              94676     388     94288   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2775068   3092400  48% /var/lib/docker/aufs/mnt/21ab694764519021c8925479a23bfb4a0cdfae060864c752470c298e5519ce53
+none             6205744 2775068   3092400  48% /var/lib/docker/aufs/mnt/b030250cfe2bda91db9cf077673188942c909f62d1b738a70a2a7d9f8def5d06
+none             6205744 2775068   3092400  48% /var/lib/docker/aufs/mnt/bf7b17256c2ea9e4507c20004d764a9dd4776b73326b3d4365e1ec77defaaab9
+du
+276	.
+----->>>>> 
+One running flask dashboard
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND             CREATED             STATUS              PORTS                                            NAMES
+21ab69476451        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         About an hour ago   Up 18 minutes       8883/tcp, 1883/tcp, 192.168.1.106:8081->80/tcp   dashboard11         
+bf7b17256c2e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         About an hour ago   Up 17 minutes       1883/tcp, 8883/tcp, 192.168.1.106:8082->80/tcp   dashboard10         
+b030250cfe2b        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"         3 hours ago         Up 17 minutes       1883/tcp, 8883/tcp, 0.0.0.0:8080->80/tcp         dashboard7          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash
+        |        |-2*[bash---python---python---{python}]
+        |        |-3*[docker---4*[{docker}]]
+        |        `-11*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 10:59:39 up 20 min,  2 users,  load average: 2.11, 1.88, 1.15
+Tasks:  80 total,   3 running,  77 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  48.5/17.0   65[|||||||||||||||||||||||||||||||||||                  ]
+GiB Mem : 82.3/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   2.2m  0.0  1.2   0:07.06 S systemd
+   79 root      20   0   11.6m   1.5m  0.0  0.8   0:02.30 S  `- systemd-journal
+   98 root      20   0   10.5m   1.0m  0.0  0.5   0:00.47 S  `- systemd-udevd
+  120 root      20   0    3.1m   1.1m  0.0  0.6   0:00.14 S  `- systemd-logind
+  122 dbus      20   0    4.2m   1.1m  0.0  0.6   0:00.25 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.4m  0.0  0.2   0:00.27 S  `- rngd
+  125 avahi     20   0    3.3m   1.0m  0.0  0.6   0:00.20 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.4m  0.0  0.2   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.6m  0.0  0.3   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   1.1m  0.0  0.6   0:04.89 S  `- crond
+  130 root      20   0    6.5m   1.1m  0.0  0.6   0:00.10 S  `- sshd
+  267 root      20   0   10.7m   1.5m  0.0  0.8   0:01.37 S      `- sshd
+  274 root      20   0    3.4m   0.9m  0.0  0.5   0:00.23 S          `- bash
+  465 root      20   0  825.1m   3.2m  0.0  1.7   0:00.36 S              `- do+
+  484 root      20   0   10.7m   1.5m  0.0  0.8   0:00.75 S      `- sshd
+  488 root      20   0    3.4m   1.5m  0.0  0.8   0:00.13 S          `- bash
+  535 root      20   0    3.2m   1.2m  0.0  0.7   0:00.02 S              `- ga+
+  547 root      20   0    4.9m   1.4m 17.9  0.7   0:00.14 R                  `+
+  131 root      20   0    1.7m   0.5m  0.0  0.3   0:00.80 S  `- ifplugd
+  132 root      20   0  873.8m   6.9m  0.0  3.7   0:06.58 S  `- docker
+  317 root      20   0  816.8m   2.9m  0.0  1.6   0:00.30 S      `- docker
+  328 root      20   0    3.0m   0.4m  0.0  0.2   0:00.32 S      `- bash
+  358 root      20   0  816.8m   2.9m  0.0  1.6   0:00.28 S      `- docker
+  369 root      20   0    3.0m   0.4m  0.0  0.2   0:00.32 S      `- bash
+  479 root      20   0   18.0m  10.1m  0.0  5.5   0:06.61 S          `- python
+  481 root      20   0   38.7m  22.1m 32.1 12.0   6:49.34 R              `- py+
+  400 root      20   0  816.8m   2.9m  0.0  1.5   0:00.31 S      `- docker
+  411 root      20   0    3.0m   0.4m  0.0  0.2   0:00.31 S      `- bash
+  523 root      20   0   18.0m  10.1m  0.0  5.5   0:06.61 S          `- python
+  525 root      20   0   39.8m  22.9m 35.7 12.4   5:17.97 R              `- py+
+  133 root      20   0    7.4m   3.4m  0.0  1.8   0:03.60 S  `- haveged
+  146 root      20   0    1.8m   0.6m  0.0  0.3   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.6m  0.0  0.3   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.4m  0.0  0.2   0:00.02 S  `- dhcpcd
+  271 root      20   0    5.1m   1.5m  0.0  0.8   0:00.30 S  `- systemd
+  272 root      20   0    8.7m   1.0m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:00.35 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    6 root      20   0    0.0m   0.0m  0.0  0.0   0:00.14 S  `- kworker/u2:0
+    7 root      20   0    0.0m   0.0m  0.0  0.0   0:02.18 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   20 root      20   0    0.0m   0.0m  0.0  0.0   0:00.62 S  `- kworker/0:1
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0   0:01.62 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   0:01.11 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   50 root      20   0    0.0m   0.0m  0.0  0.0   0:00.05 S  `- kworker/u2:2
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.02 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+   69 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:2
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  530 root      20   0    0.0m   0.0m  0.0  0.0   0:00.03 S  `- kworker/u2:1
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          90          56           0          38          32
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2775080   3092388  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     472     94204   1% /dev/shm
+tmpfs              94676     416     94260   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2775080   3092388  48% /var/lib/docker/aufs/mnt/21ab694764519021c8925479a23bfb4a0cdfae060864c752470c298e5519ce53
+none             6205744 2775080   3092388  48% /var/lib/docker/aufs/mnt/b030250cfe2bda91db9cf077673188942c909f62d1b738a70a2a7d9f8def5d06
+none             6205744 2775080   3092388  48% /var/lib/docker/aufs/mnt/bf7b17256c2ea9e4507c20004d764a9dd4776b73326b3d4365e1ec77defaaab9
+du
+284	.
+----->>>>> 
+2 Running python dashboards
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND             CREATED             STATUS              PORTS                                            NAMES
+21ab69476451        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         About an hour ago   Up 24 minutes       8883/tcp, 1883/tcp, 192.168.1.106:8081->80/tcp   dashboard11         
+bf7b17256c2e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         About an hour ago   Up 24 minutes       8883/tcp, 1883/tcp, 192.168.1.106:8082->80/tcp   dashboard10         
+b030250cfe2b        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"         3 hours ago         Up 24 minutes       1883/tcp, 8883/tcp, 0.0.0.0:8080->80/tcp         dashboard7          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-3*[bash---python---python---{python}]
+        |        |-3*[docker---4*[{docker}]]
+        |        `-12*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-3*[sshd---bash---docker---5*[{docker}]]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 11:06:15 up 26 min,  4 users,  load average: 3.25, 2.52, 1.64
+Tasks:  88 total,   4 running,  84 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  53.7/20.0   74[|||||||||||||||||||||||||||||||||||||||              ]
+GiB Mem : 91.1/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   1.1m  0.0  0.6   0:07.20 S systemd
+   79 root      20   0   11.6m   1.1m  0.0  0.6   0:02.65 S  `- systemd-journal
+   98 root      20   0   10.5m   0.4m  0.0  0.2   0:00.47 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.3m  0.0  0.2   0:00.19 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.4m  0.0  0.2   0:00.31 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.2m  0.0  0.1   0:00.37 S  `- rngd
+  125 avahi     20   0    3.3m   0.4m  0.0  0.2   0:00.21 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.2m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:04.92 S  `- crond
+  130 root      20   0    6.5m   0.5m  0.0  0.3   0:00.12 S  `- sshd
+  267 root      20   0   10.8m   0.8m  0.0  0.4   0:01.40 S      `- sshd
+  274 root      20   0    3.4m   0.4m  0.0  0.2   0:00.23 S          `- bash
+  465 root      20   0  825.1m   1.8m  0.0  1.0   0:00.46 S              `- do+
+  484 root      20   0   10.8m   0.8m  0.0  0.4   0:00.92 S      `- sshd
+  488 root      20   0    3.4m   0.4m  0.0  0.2   0:00.14 S          `- bash
+  551 root      20   0  825.1m   2.1m  0.0  1.1   0:00.40 S              `- do+
+  574 root      20   0   10.7m   0.7m  0.0  0.4   0:00.78 S      `- sshd
+  578 root      20   0    3.4m   0.4m  0.0  0.2   0:00.14 S          `- bash
+  596 root      20   0  824.9m   1.7m  0.0  0.9   0:00.33 S              `- do+
+  613 root      20   0   10.7m   0.8m  0.0  0.5   0:00.74 S      `- sshd
+  617 root      20   0    3.4m   0.5m  0.0  0.3   0:00.18 S          `- bash
+  638 root      20   0    3.2m   0.8m  0.0  0.4   0:00.04 S              `- ga+
+  650 root      20   0    4.9m   1.4m 20.7  0.7   0:00.16 R                  `+
+  131 root      20   0    1.7m   0.2m  0.0  0.1   0:01.08 S  `- ifplugd
+  132 root      20   0  881.8m   5.9m  0.0  3.2   0:08.13 S  `- docker
+  317 root      20   0  816.8m   1.3m  0.0  0.7   0:00.33 S      `- docker
+  328 root      20   0    3.0m   0.4m  0.0  0.2   0:00.40 S      `- bash
+  608 root      20   0   18.0m  10.0m  0.0  5.4   0:06.64 S          `- python
+  610 root      20   0   28.6m  11.5m 24.1  6.2   0:36.11 R              `- py+
+  358 root      20   0  816.8m   1.7m  0.0  0.9   0:00.32 S      `- docker
+  369 root      20   0    3.0m   0.4m  0.0  0.2   0:00.32 S      `- bash
+  479 root      20   0   18.0m  10.0m  0.0  5.4   0:06.61 S          `- python
+  481 root      20   0   38.0m  21.5m 20.7 11.6   9:54.59 R              `- py+
+  400 root      20   0  816.8m   1.3m  0.0  0.7   0:00.36 S      `- docker
+  411 root      20   0    3.0m   0.4m  0.0  0.2   0:00.37 S      `- bash
+  569 root      20   0   18.0m  10.0m  0.0  5.4   0:06.52 S          `- python
+  571 root      20   0   33.8m  17.1m 24.1  9.2   2:00.31 R              `- py+
+  133 root      20   0    7.4m   3.1m  0.0  1.7   0:03.84 S  `- haveged
+  146 root      20   0    1.8m   0.2m  0.0  0.1   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.2m  0.0  0.1   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.2m  0.0  0.1   0:00.03 S  `- dhcpcd
+  271 root      20   0    5.1m   0.5m  0.0  0.3   0:00.30 S  `- systemd
+  272 root      20   0    8.7m   0.9m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:01.07 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  3.4  0.0   0:03.27 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   20 root      20   0    0.0m   0.0m  0.0  0.0   0:00.79 S  `- kworker/0:1
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0   0:05.57 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   0:03.05 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   50 root      20   0    0.0m   0.0m  0.0  0.0   0:00.05 S  `- kworker/u2:2
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.05 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+   69 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:2
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  530 root      20   0    0.0m   0.0m  0.0  0.0   0:00.11 S  `- kworker/u2:1
+  633 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184         110          44           1          30          16
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2775144   3092324  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     556     94120   1% /dev/shm
+tmpfs              94676     472     94204   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2775144   3092324  48% /var/lib/docker/aufs/mnt/21ab694764519021c8925479a23bfb4a0cdfae060864c752470c298e5519ce53
+none             6205744 2775144   3092324  48% /var/lib/docker/aufs/mnt/b030250cfe2bda91db9cf077673188942c909f62d1b738a70a2a7d9f8def5d06
+none             6205744 2775144   3092324  48% /var/lib/docker/aufs/mnt/bf7b17256c2ea9e4507c20004d764a9dd4776b73326b3d4365e1ec77defaaab9
+du
+292	.
+----->>>>> 
+3 web apps running
+Total freeze
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND             CREATED             STATUS              PORTS                                            NAMES
+21ab69476451        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         2 hours ago         Up About an hour    8883/tcp, 1883/tcp, 192.168.1.106:8081->80/tcp   dashboard11         
+bf7b17256c2e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         2 hours ago         Up About an hour    1883/tcp, 8883/tcp, 192.168.1.106:8082->80/tcp   dashboard10         
+b030250cfe2b        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"         4 hours ago         Up About an hour    1883/tcp, 8883/tcp, 0.0.0.0:8080->80/tcp         dashboard7          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-3*[bash---python---python---{python}]
+        |        |-3*[docker---4*[{docker}]]
+        |        `-12*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-3*[sshd---bash---docker---5*[{docker}]]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 12:35:52 up  1:56,  4 users,  load average: 3.75, 5.39, 6.11
+Tasks:  88 total,   4 running,  84 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  18.8/23.6   42[|||||||||||||||||||||||                              ]
+GiB Mem : 90.4/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   1.1m  0.0  0.6   0:19.37 S systemd
+   79 root      20   0   11.6m   1.1m  0.0  0.6   0:05.62 S  `- systemd-journal
+   98 root      20   0   10.5m   0.3m  0.0  0.2   0:00.47 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.2m  0.0  0.1   0:01.40 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.3m  0.0  0.2   0:00.33 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:03.65 S  `- rngd
+  125 avahi     20   0    3.3m   0.2m  0.0  0.1   0:00.88 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.6m  0.0  0.3   0:07.11 S  `- crond
+  130 root      20   0    6.5m   0.4m  0.0  0.2   0:00.12 S  `- sshd
+  267 root      20   0   10.8m   0.8m  0.0  0.4   0:01.45 S      `- sshd
+  274 root      20   0    3.4m   0.3m  0.0  0.2   0:00.23 S          `- bash
+  465 root      20   0  825.1m   2.1m  0.0  1.1   0:04.71 S              `- do+
+  484 root      20   0   10.8m   0.8m  0.0  0.4   0:00.95 S      `- sshd
+  488 root      20   0    3.4m   0.3m  0.0  0.2   0:00.14 S          `- bash
+  551 root      20   0  825.1m   2.0m  0.0  1.1   0:05.82 S              `- do+
+  574 root      20   0   10.7m   0.8m  0.0  0.4   0:00.81 S      `- sshd
+  578 root      20   0    3.4m   0.3m  0.0  0.2   0:00.14 S          `- bash
+  596 root      20   0  825.1m   1.5m  0.0  0.8   0:06.52 S              `- do+
+  613 root      20   0   10.8m   0.8m  0.0  0.5   0:02.40 S      `- sshd
+  617 root      20   0    3.4m   0.9m  0.0  0.5   0:01.04 S          `- bash
+  751 root      20   0    3.2m   1.2m  0.0  0.7   0:00.04 S              `- ga+
+  763 root      20   0    4.9m   1.4m 16.7  0.7   0:00.15 R                  `+
+  131 root      20   0    1.7m   0.1m  0.0  0.1   0:08.96 S  `- ifplugd
+  132 root      20   0  882.1m   5.7m  0.0  3.1   0:45.99 S  `- docker
+  317 root      20   0  816.8m   1.2m  0.0  0.6   0:04.62 S      `- docker
+  328 root      20   0    3.0m   0.3m  0.0  0.1   0:00.40 S      `- bash
+  608 root      20   0   18.0m   9.3m  0.0  5.0   0:06.64 S          `- python
+  610 root      20   0   30.4m  13.5m 20.0  7.3   5:42.20 R              `- py+
+  358 root      20   0  816.8m   1.8m  0.0  1.0   0:05.30 S      `- docker
+  369 root      20   0    3.0m   0.3m  0.0  0.1   0:00.32 S      `- bash
+  479 root      20   0   18.0m   9.3m  0.0  5.0   0:06.61 S          `- python
+  481 root      20   0   36.5m  20.1m 23.3 10.9  14:45.92 R              `- py+
+  400 root      20   0  816.8m   1.2m  0.0  0.6   0:04.49 S      `- docker
+  411 root      20   0    3.0m   0.3m  0.0  0.1   0:00.37 S      `- bash
+  569 root      20   0   18.0m   9.3m  0.0  5.0   0:06.52 S          `- python
+  571 root      20   0   31.7m  15.3m 26.7  8.3   6:50.93 R              `- py+
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:09.06 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.2m  0.0  0.1   0:00.27 S  `- dhcpcd
+  271 root      20   0    5.1m   0.4m  0.0  0.2   0:00.48 S  `- systemd
+  272 root      20   0    8.7m   0.9m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:08.15 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   0:09.02 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   20 root      20   0    0.0m   0.0m  0.0  0.0   0:03.74 S  `- kworker/0:1
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0   9:42.06 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   4:38.31 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.08 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+   69 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:2
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  530 root      20   0    0.0m   0.0m  0.0  0.0   0:00.41 S  `- kworker/u2:1
+  745 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:2
+  750 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184         108          45           1          30          17
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2775232   3092236  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     556     94120   1% /dev/shm
+tmpfs              94676     472     94204   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2775232   3092236  48% /var/lib/docker/aufs/mnt/21ab694764519021c8925479a23bfb4a0cdfae060864c752470c298e5519ce53
+none             6205744 2775232   3092236  48% /var/lib/docker/aufs/mnt/b030250cfe2bda91db9cf077673188942c909f62d1b738a70a2a7d9f8def5d06
+none             6205744 2775232   3092236  48% /var/lib/docker/aufs/mnt/bf7b17256c2ea9e4507c20004d764a9dd4776b73326b3d4365e1ec77defaaab9
+du
+300	.
+----->>>>> 
+stopped and exited one of the web apps
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND             CREATED             STATUS              PORTS                                            NAMES
+bf7b17256c2e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         2 hours ago         Up 2 hours          1883/tcp, 8883/tcp, 192.168.1.106:8082->80/tcp   dashboard10         
+b030250cfe2b        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"         4 hours ago         Up 2 hours          1883/tcp, 8883/tcp, 0.0.0.0:8080->80/tcp         dashboard7          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-2*[bash---python---python---{python}]
+        |        |-2*[docker---4*[{docker}]]
+        |        `-12*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-2*[sshd---bash---docker---5*[{docker}]]
+        |      |-sshd---bash---gather.sh---pstree
+        |      |-sshd---bash---top
+        |      `-sshd---bash
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 12:42:15 up  2:02,  5 users,  load average: 3.04, 4.02, 5.25
+Tasks:  87 total,   1 running,  86 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  20.7/24.1   45[||||||||||||||||||||||||                             ]
+GiB Mem : 84.3/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   1.4m  0.0  0.8   0:19.79 S systemd
+   79 root      20   0   11.6m   1.1m  0.0  0.6   0:06.33 S  `- systemd-journal
+   98 root      20   0   10.5m   0.7m  0.0  0.4   0:00.49 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.4m  0.0  0.2   0:01.50 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.3m  0.0  0.2   0:00.37 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:03.79 S  `- rngd
+  125 avahi     20   0    3.3m   0.4m  0.0  0.2   0:00.89 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:07.15 S  `- crond
+  130 root      20   0    6.5m   0.4m  0.0  0.2   0:00.12 S  `- sshd
+  267 root      20   0   10.8m   0.8m  0.0  0.4   0:01.45 S      `- sshd
+  274 root      20   0    3.4m   0.3m  0.0  0.2   0:00.23 S          `- bash
+  465 root      20   0  825.1m   2.3m  0.0  1.3   0:04.77 S              `- do+
+  484 root      20   0   10.8m   0.8m  0.0  0.5   0:00.96 S      `- sshd
+  488 root      20   0    3.4m   0.3m  0.0  0.2   0:00.14 S          `- bash
+  551 root      20   0  825.1m   2.3m  0.0  1.3   0:05.90 S              `- do+
+  574 root      20   0   10.7m   0.9m  0.0  0.5   0:00.93 S      `- sshd
+  578 root      20   0    3.4m   1.2m  0.0  0.6   0:00.20 S          `- bash
+  851 root      20   0    3.2m   1.2m  0.0  0.7   0:00.02 S              `- ga+
+  863 root      20   0    4.9m   1.4m 15.0  0.7   0:00.15 R                  `+
+  613 root      20   0   10.8m   0.9m  0.0  0.5   0:02.89 S      `- sshd
+  617 root      20   0    3.4m   0.3m  0.0  0.2   0:01.05 S          `- bash
+  767 root      20   0    4.9m   0.9m  0.0  0.5   0:14.23 S              `- top
+  768 root      20   0   10.8m   0.8m  0.0  0.4   0:00.78 S      `- sshd
+  772 root      20   0    3.3m   0.9m  0.0  0.5   0:00.25 S          `- bash
+  131 root      20   0    1.7m   0.1m  0.0  0.1   0:09.26 S  `- ifplugd
+  132 root      20   0  882.1m   6.5m  0.0  3.5   0:49.81 S  `- docker
+  358 root      20   0  816.8m   2.0m  0.0  1.1   0:05.40 S      `- docker
+  369 root      20   0    3.0m   0.3m  0.0  0.1   0:00.32 S      `- bash
+  479 root      20   0   18.0m   9.3m  0.0  5.0   0:06.61 S          `- python
+  481 root      20   0   40.0m  24.1m 22.5 13.1  16:40.36 D              `- py+
+  400 root      20   0  816.8m   2.0m  0.0  1.1   0:04.56 S      `- docker
+  411 root      20   0    3.0m   0.3m  0.0  0.1   0:00.37 S      `- bash
+  569 root      20   0   18.0m   9.3m  0.0  5.0   0:06.52 S          `- python
+  571 root      20   0   37.8m  21.9m 22.5 11.8   8:44.95 D              `- py+
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:09.33 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.2m  0.0  0.1   0:00.28 S  `- dhcpcd
+  271 root      20   0    5.1m   0.9m  0.0  0.5   0:00.55 S  `- systemd
+  272 root      20   0    8.7m   0.9m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:09.12 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   0:09.88 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   20 root      20   0    0.0m   0.0m  0.0  0.0   0:03.99 S  `- kworker/0:1
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0   9:50.09 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   4:45.72 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.10 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+   69 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:2
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  530 root      20   0    0.0m   0.0m  0.0  0.0   0:00.50 S  `- kworker/u2:1
+  750 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:2
+  841 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          93          53           0          37          28
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2775256   3092212  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     368     94308   1% /dev/shm
+tmpfs              94676     496     94180   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2775256   3092212  48% /var/lib/docker/aufs/mnt/b030250cfe2bda91db9cf077673188942c909f62d1b738a70a2a7d9f8def5d06
+none             6205744 2775256   3092212  48% /var/lib/docker/aufs/mnt/bf7b17256c2ea9e4507c20004d764a9dd4776b73326b3d4365e1ec77defaaab9
+du
+312	.
+----->>>>> 
+stopped another web app
+Only one web app left running
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND             CREATED             STATUS              PORTS                                            NAMES
+bf7b17256c2e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         3 hours ago         Up 2 hours          1883/tcp, 8883/tcp, 192.168.1.106:8082->80/tcp   dashboard10         
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-docker---4*[{docker}]
+        |        `-12*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-2*[sshd---bash]
+        |      |-sshd---bash---docker---5*[{docker}]
+        |      |-sshd---bash---gather.sh---pstree
+        |      `-sshd---bash---top
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 12:44:02 up  2:04,  5 users,  load average: 1.31, 3.15, 4.81
+Tasks:  82 total,   2 running,  80 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  21.4/24.2   46[||||||||||||||||||||||||                             ]
+GiB Mem : 72.7/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   1.9m  0.0  1.0   0:19.90 S systemd
+   79 root      20   0   11.6m   1.3m  0.0  0.7   0:06.44 S  `- systemd-journal
+   98 root      20   0   10.5m   0.7m  0.0  0.4   0:00.50 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.5m  0.0  0.3   0:01.50 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.5m  0.0  0.3   0:00.38 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:03.82 S  `- rngd
+  125 avahi     20   0    3.3m   0.6m  0.0  0.3   0:00.89 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:07.15 S  `- crond
+  130 root      20   0    6.5m   0.4m  0.0  0.2   0:00.12 S  `- sshd
+  267 root      20   0   10.8m   0.8m  0.0  0.5   0:01.48 S      `- sshd
+  274 root      20   0    3.4m   0.9m  0.0  0.5   0:00.24 S          `- bash
+  484 root      20   0   10.8m   0.8m  0.0  0.5   0:00.96 S      `- sshd
+  488 root      20   0    3.4m   0.3m  0.0  0.2   0:00.14 S          `- bash
+  551 root      20   0  825.1m   2.3m  0.0  1.3   0:05.91 S              `- do+
+  574 root      20   0   10.7m   0.9m  0.0  0.5   0:01.07 S      `- sshd
+  578 root      20   0    3.4m   1.2m  0.0  0.6   0:00.24 S          `- bash
+  884 root      20   0    3.2m   1.2m  0.0  0.7   0:00.02 S              `- ga+
+  896 root      20   0    4.9m   1.4m 19.2  0.7   0:00.12 R                  `+
+  613 root      20   0   10.8m   0.9m  0.0  0.5   0:03.00 S      `- sshd
+  617 root      20   0    3.4m   0.3m  0.0  0.2   0:01.05 S          `- bash
+  767 root      20   0    4.9m   0.9m  0.0  0.5   0:17.80 S              `- top
+  768 root      20   0   10.8m   0.8m  0.0  0.4   0:00.78 S      `- sshd
+  772 root      20   0    3.3m   0.9m  0.0  0.5   0:00.25 S          `- bash
+  131 root      20   0    1.7m   0.1m  0.0  0.1   0:09.34 S  `- ifplugd
+  132 root      20   0  882.1m   7.4m  0.0  4.0   0:50.55 S  `- docker
+  400 root      20   0  816.8m   2.0m  0.0  1.1   0:04.57 S      `- docker
+  411 root      20   0    3.0m   0.3m  0.0  0.1   0:00.37 S      `- bash
+  569 root      20   0   18.0m   9.3m  0.0  5.0   0:06.52 S          `- python
+  571 root      20   0   41.8m  25.9m 76.9 14.0  10:13.01 R              `- py+
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:09.39 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.2m  0.0  0.1   0:00.28 S  `- dhcpcd
+  271 root      20   0    5.1m   1.1m  0.0  0.6   0:00.56 S  `- systemd
+  272 root      20   0    8.7m   0.9m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:09.16 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   0:10.14 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   20 root      20   0    0.0m   0.0m  0.0  0.0   0:04.10 S  `- kworker/0:1
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0   9:50.09 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   4:45.85 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.10 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+   69 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:2
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  530 root      20   0    0.0m   0.0m  0.0  0.0   0:00.55 S  `- kworker/u2:1
+  750 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:2
+  841 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          62          66           0          56          50
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2775268   3092200  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     188     94488   1% /dev/shm
+tmpfs              94676     468     94208   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2775268   3092200  48% /var/lib/docker/aufs/mnt/bf7b17256c2ea9e4507c20004d764a9dd4776b73326b3d4365e1ec77defaaab9
+du
+324	.
+----->>>>> 
+Stopped last of the web apps
+docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker---12*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-3*[sshd---bash]
+        |      |-sshd---bash---gather.sh---pstree
+        |      `-sshd---bash---top
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 12:45:05 up  2:05,  5 users,  load average: 0.80, 2.67, 4.53
+Tasks:  76 total,   1 running,  75 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  21.5/24.1   46[||||||||||||||||||||||||                             ]
+GiB Mem : 50.8/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   1.9m  0.0  1.0   0:19.99 S systemd
+   79 root      20   0   11.6m   1.4m  0.0  0.7   0:06.52 S  `- systemd-journal
+   98 root      20   0   10.5m   0.7m  0.0  0.4   0:00.51 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.5m  0.0  0.3   0:01.50 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.5m  0.0  0.3   0:00.38 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:03.83 S  `- rngd
+  125 avahi     20   0    3.3m   0.6m  0.0  0.3   0:00.89 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:07.15 S  `- crond
+  130 root      20   0    6.5m   0.4m  0.0  0.2   0:00.12 S  `- sshd
+  267 root      20   0   10.8m   0.8m  0.0  0.5   0:01.48 S      `- sshd
+  274 root      20   0    3.4m   0.9m  0.0  0.5   0:00.24 S          `- bash
+  484 root      20   0   10.8m   0.9m  0.0  0.5   0:00.98 S      `- sshd
+  488 root      20   0    3.4m   0.9m  0.0  0.5   0:00.15 S          `- bash
+  574 root      20   0   10.7m   0.9m  0.0  0.5   0:01.14 S      `- sshd
+  578 root      20   0    3.4m   1.2m  0.0  0.6   0:00.27 S          `- bash
+  906 root      20   0    3.2m   1.2m  0.0  0.7   0:00.02 S              `- ga+
+  919 root      20   0    4.9m   1.4m 20.0  0.7   0:00.11 R                  `+
+  613 root      20   0   10.8m   0.9m  0.0  0.5   0:03.06 S      `- sshd
+  617 root      20   0    3.4m   0.3m  0.0  0.2   0:01.05 S          `- bash
+  767 root      20   0    4.9m   0.9m  0.0  0.5   0:19.87 S              `- top
+  768 root      20   0   10.8m   0.8m  0.0  0.4   0:00.78 S      `- sshd
+  772 root      20   0    3.3m   0.9m  0.0  0.5   0:00.25 S          `- bash
+  131 root      20   0    1.7m   0.1m  0.0  0.1   0:09.38 S  `- ifplugd
+  132 root      20   0  882.1m   7.4m  0.0  4.0   0:51.03 S  `- docker
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:09.41 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.2m  0.0  0.1   0:00.28 S  `- dhcpcd
+  271 root      20   0    5.1m   1.1m  0.0  0.6   0:00.57 S  `- systemd
+  272 root      20   0    8.7m   0.9m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:09.20 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   0:10.22 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   20 root      20   0    0.0m   0.0m  0.0  0.0   0:04.15 S  `- kworker/0:1
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0   9:50.09 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   4:45.87 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.11 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+   69 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:2
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  530 root      20   0    0.0m   0.0m  0.0  0.0   0:00.60 S  `- kworker/u2:1
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:2
+  841 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          25         108           0          51          91
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2775296   3092172  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676       0     94676   0% /dev/shm
+tmpfs              94676     440     94236   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+tmpfs              18936       0     18936   0% /run/user/0
+du
+328	.
+----->>>>> 
+Exited all containers
+one web app running
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND             CREATED             STATUS              PORTS                                            NAMES
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         28 hours ago        Up 25 hours         8883/tcp, 1883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-docker---4*[{docker}]
+        |        `-12*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 15:55:47 up 1 day,  5:16,  2 users,  load average: 0.98, 1.05, 1.09
+Tasks:  73 total,   2 running,  71 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.7/21.8   83[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 74.5/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   2.2m  0.0  1.2   0:26.70 S systemd
+   79 root      20   0   11.6m   1.7m  0.0  0.9   0:09.57 S  `- systemd-journal
+   98 root      20   0   10.5m   0.3m  0.0  0.2   0:00.52 S  `- systemd-udevd
+  120 root      20   0    3.1m   1.0m  0.0  0.5   0:02.88 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.8m  0.0  0.4   0:00.69 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:20.76 S  `- rngd
+  125 avahi     20   0    3.3m   0.7m  0.0  0.4   0:01.35 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:08.28 S  `- crond
+  130 root      20   0    6.5m   0.6m  0.0  0.3   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   1.1m  0.0  0.6   0:02.78 S      `- sshd
+ 1141 root      20   0    3.3m   1.2m  0.0  0.6   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   3.9m  0.0  2.1   0:05.49 S              `- do+
+ 1203 root      20   0   10.8m   2.3m  0.0  1.2   0:34.27 S      `- sshd
+ 1207 root      20   0    3.4m   1.7m  0.0  0.9   0:00.15 S          `- bash
+ 1367 root      20   0    3.2m   1.2m  0.0  0.7   0:00.02 S              `- ga+
+ 1379 root      20   0    4.7m   1.4m 16.7  0.7   0:00.12 R                  `+
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:14.99 S  `- ifplugd
+  132 root      20   0  882.1m   6.9m  0.0  3.7   1:22.55 S  `- docker
+  979 root      20   0  816.8m   2.0m  0.0  1.1   0:07.74 S      `- docker
+  990 root      20   0    3.1m   1.2m  0.0  0.6   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m  12.8m  0.0  6.9   0:06.44 S          `- python
+ 1294 root      20   0   49.6m  35.4m 79.2 19.2 510:53.69 R              `- py+
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:52.79 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.4m  0.0  0.2   0:00.38 S  `- dhcpcd
+ 1138 root      20   0    5.1m   0.8m  0.0  0.4   0:00.25 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.6   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:22.17 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   3:30.66 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.08 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0  10:06.79 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   4:52.30 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.32 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:2
+  841 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:40.96 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:04.79 S  `- kworker/u2:1
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          66          61           0          56          47
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2775544   3091924  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     192     94484   1% /dev/shm
+tmpfs              94676     384     94292   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2775544   3091924  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+du
+336	.
+----->>>>> 
+web app and broker running
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND             CREATED             STATUS              PORTS                                            NAMES
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         28 hours ago        Up 25 hours         8883/tcp, 1883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"         2 weeks ago         Up About a minute   0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-3*[docker---4*[{docker}]]
+        |        `-12*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 15:57:20 up 1 day,  5:17,  2 users,  load average: 1.14, 1.12, 1.12
+Tasks:  80 total,   1 running,  79 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.7/21.8   83[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 80.3/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   2.4m  0.0  1.3   0:26.78 S systemd
+   79 root      20   0   11.6m   1.9m  0.0  1.0   0:09.76 S  `- systemd-journal
+   98 root      20   0   10.5m   0.8m  0.0  0.4   0:00.54 S  `- systemd-udevd
+  120 root      20   0    3.1m   1.0m  0.0  0.5   0:02.89 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.8m  0.0  0.4   0:00.70 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:20.79 S  `- rngd
+  125 avahi     20   0    3.3m   0.8m  0.0  0.4   0:01.35 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:08.28 S  `- crond
+  130 root      20   0    6.5m   0.6m  0.0  0.3   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   1.1m  0.0  0.6   0:02.78 S      `- sshd
+ 1141 root      20   0    3.3m   1.2m  0.0  0.6   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   3.9m  0.0  2.1   0:05.49 S              `- do+
+ 1203 root      20   0   10.8m   2.3m  0.0  1.2   0:34.27 S      `- sshd
+ 1207 root      20   0    3.4m   1.7m  0.0  0.9   0:00.19 S          `- bash
+ 1454 root      20   0    3.2m   1.2m  0.0  0.7   0:00.02 S              `- ga+
+ 1466 root      20   0    4.9m   1.4m 23.8  0.7   0:00.12 R                  `+
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:15.06 S  `- ifplugd
+  132 root      20   0  882.1m   8.0m  0.0  4.3   1:23.38 S  `- docker
+  979 root      20   0  816.8m   2.0m  0.0  1.1   0:07.76 S      `- docker
+  990 root      20   0    3.1m   1.2m  0.0  0.6   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m  12.8m  0.0  6.9   0:06.44 S          `- python
+ 1294 root      20   0   52.9m  38.9m  0.0 21.1 512:13.30 S              `- py+
+ 1395 root      20   0  816.8m   5.1m  0.0  2.8   0:00.21 S      `- docker
+ 1407 root      20   0  816.8m   5.1m  0.0  2.7   0:00.20 S      `- docker
+ 1417 root      20   0    3.0m   1.6m  0.0  0.9   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   1.3m  0.0  0.7   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   1.6m  0.0  0.9   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.9m  0.0  0.5   0:00.06 S          `- mosqui+
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:52.84 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.4m  0.0  0.2   0:00.40 S  `- dhcpcd
+ 1138 root      20   0    5.1m   1.3m  0.0  0.7   0:00.29 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.6   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:22.21 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   3:30.87 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.08 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0  10:06.91 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   4:52.45 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.33 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:2
+  841 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:41.05 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:04.81 S  `- kworker/u2:1
+ 1430 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          74          49           0          60          36
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2775552   3091916  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     288     94388   1% /dev/shm
+tmpfs              94676     412     94264   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2775552   3091916  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2775552   3091916  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+du
+344	.
+----->>>>> 
+Running web app, broker and 1 sensor20
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND             CREATED             STATUS              PORTS                                            NAMES
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"         28 hours ago        Up 25 hours         8883/tcp, 1883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+401fcbb15ac4        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"         4 days ago          Up 3 minutes        1883/tcp, 8883/tcp                               sensor20            
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"         2 weeks ago         Up 8 minutes        0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-bash---python
+        |        |-2*[docker---4*[{docker}]]
+        |        |-docker---5*[{docker}]
+        |        `-19*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 16:04:16 up 1 day,  5:24,  2 users,  load average: 1.20, 1.52, 1.36
+Tasks:  81 total,   3 running,  78 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.8/21.8   83[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 77.1/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   2.4m  0.0  1.3   0:29.25 S systemd
+   79 root      20   0   11.6m   2.5m  0.0  1.4   0:12.06 S  `- systemd-journal
+   98 root      20   0   10.5m   0.8m  0.0  0.4   0:00.78 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.8m  0.0  0.4   0:02.99 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.7m  0.0  0.4   0:01.00 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:20.92 R  `- rngd
+  125 avahi     20   0    3.3m   0.6m  0.0  0.3   0:01.44 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:08.29 S  `- crond
+  130 root      20   0    6.5m   0.5m  0.0  0.3   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   1.1m  0.0  0.6   0:02.78 S      `- sshd
+ 1141 root      20   0    3.3m   1.1m  0.0  0.6   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   3.8m  0.0  2.1   0:05.55 S              `- do+
+ 1203 root      20   0   10.8m   1.6m  0.0  0.8   0:34.57 S      `- sshd
+ 1207 root      20   0    3.4m   1.5m  0.0  0.8   0:00.41 S          `- bash
+ 2152 root      20   0    3.2m   1.2m  0.0  0.7   0:00.02 S              `- ga+
+ 2164 root      20   0    4.9m   1.4m 18.5  0.7   0:00.14 R                  `+
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:15.35 S  `- ifplugd
+  132 root      20   0  938.1m  10.2m  0.0  5.5   1:34.39 S  `- docker
+  979 root      20   0  816.8m   2.0m  0.0  1.1   0:07.80 S      `- docker
+  990 root      20   0    3.1m   1.0m  0.0  0.5   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m  12.3m  0.0  6.7   0:06.44 S          `- python
+ 1294 root      20   0   38.2m  23.8m 70.4 12.8 517:21.61 R              `- py+
+ 1395 root      20   0  824.8m   5.7m  0.0  3.1   0:00.44 S      `- docker
+ 1407 root      20   0  816.8m   5.0m  0.0  2.7   0:00.25 S      `- docker
+ 1417 root      20   0    3.0m   1.4m  0.0  0.7   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   0.9m  0.0  0.5   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   1.4m  0.0  0.7   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.9m  0.0  0.5   0:00.73 S          `- mosqui+
+ 2049 root      20   0    3.1m   1.7m  0.0  0.9   0:00.38 S      `- bash
+ 2148 root      20   0   11.6m   7.1m  0.0  3.8   0:02.12 S          `- python
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:53.13 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.3m  0.0  0.2   0:00.64 S  `- dhcpcd
+ 1138 root      20   0    5.1m   1.3m  0.0  0.7   0:00.87 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.6   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:22.44 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  3.7  0.0   3:32.08 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.08 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0  10:07.63 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  3.7  0.0   4:53.17 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.38 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.64 S  `- kworker/u2:2
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:41.73 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:04.96 S  `- kworker/u2:1
+ 1430 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          66          54           0          64          42
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2775580   3091888  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     432     94244   1% /dev/shm
+tmpfs              94676     440     94236   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2775580   3091888  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2775580   3091888  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+none             6205744 2775580   3091888  48% /var/lib/docker/aufs/mnt/401fcbb15ac4c69bcda74648ef351e63b9d2063f630c7af7e47e041fbf095180
+du
+356	.
+----->>>>> 
++2 sensors
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND                CREATED             STATUS              PORTS                                            NAMES
+f3ca000df913        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   49 seconds ago      Up 46 seconds       1883/tcp, 8883/tcp                               newsensor2          
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"            29 hours ago        Up 26 hours         8883/tcp, 1883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+401fcbb15ac4        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"            4 days ago          Up 13 minutes       1883/tcp, 8883/tcp                               sensor20            
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"            2 weeks ago         Up 18 minutes       0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-bash---python
+        |        |-2*[docker---4*[{docker}]]
+        |        |-docker---6*[{docker}]
+        |        |-python
+        |        `-19*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 16:14:19 up 1 day,  5:34,  2 users,  load average: 1.42, 1.30, 1.30
+Tasks:  84 total,   1 running,  83 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.8/21.8   83[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 84.9/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   2.4m  0.0  1.3   0:29.93 S systemd
+   79 root      20   0   11.6m   1.4m  0.0  0.8   0:13.12 S  `- systemd-journal
+   98 root      20   0   10.5m   0.8m  0.0  0.4   0:00.86 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.8m  0.0  0.4   0:03.03 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.7m  0.0  0.4   0:01.07 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:21.06 S  `- rngd
+  125 avahi     20   0    3.3m   0.6m  0.0  0.3   0:01.46 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:08.31 S  `- crond
+  130 root      20   0    6.5m   0.5m  0.0  0.3   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   1.1m  0.0  0.6   0:02.81 S      `- sshd
+ 1141 root      20   0    3.3m   1.1m  0.0  0.6   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   3.8m  0.0  2.1   0:05.62 S              `- do+
+ 1203 root      20   0   10.8m   1.6m  0.0  0.8   0:36.15 S      `- sshd
+ 1207 root      20   0    3.4m   1.5m  0.0  0.8   0:00.80 S          `- bash
+ 2422 root      20   0    3.2m   1.2m  0.0  0.7   0:00.02 S              `- ga+
+ 2434 root      20   0    4.9m   1.4m 21.4  0.7   0:00.14 R                  `+
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:15.76 S  `- ifplugd
+  132 root      20   0  938.1m  11.5m  0.0  6.2   1:39.75 S  `- docker
+  979 root      20   0  816.8m   2.0m  0.0  1.1   0:07.84 S      `- docker
+  990 root      20   0    3.1m   1.0m  0.0  0.5   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m  10.8m  0.0  5.9   0:06.44 S          `- python
+ 1294 root      20   0   55.0m  39.4m 67.9 21.3 525:56.19 S              `- py+
+ 1395 root      20   0  832.8m   5.9m  0.0  3.2   0:01.68 S      `- docker
+ 1407 root      20   0  816.8m   4.9m  0.0  2.6   0:00.30 S      `- docker
+ 1417 root      20   0    3.0m   1.4m  0.0  0.7   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   0.9m  0.0  0.5   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   1.4m  0.0  0.7   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.9m  0.0  0.5   0:02.01 S          `- mosqui+
+ 2049 root      20   0    3.1m   1.4m  0.0  0.8   0:00.41 S      `- bash
+ 2182 root      20   0   11.6m   5.5m  0.0  3.0   0:04.30 S          `- python
+ 2399 root      20   0   11.6m   7.1m  0.0  3.8   0:02.46 S      `- python
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:53.48 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.3m  0.0  0.2   0:00.71 S  `- dhcpcd
+ 1138 root      20   0    5.1m   1.3m  0.0  0.7   0:01.15 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.6   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:22.71 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   3:33.46 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.08 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0  10:08.49 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   4:53.72 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.46 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.79 S  `- kworker/u2:2
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:42.41 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:05.06 S  `- kworker/u2:1
+ 2219 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+ 2410 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1
+ 2419 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          89          47           1          48          28
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2776180   3091288  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     572     94104   1% /dev/shm
+tmpfs              94676     468     94208   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2776180   3091288  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2776180   3091288  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+none             6205744 2776180   3091288  48% /var/lib/docker/aufs/mnt/401fcbb15ac4c69bcda74648ef351e63b9d2063f630c7af7e47e041fbf095180
+none             6205744 2776180   3091288  48% /var/lib/docker/aufs/mnt/f3ca000df91386bd5a581c8992380393901b20ff481b4ac5457deabd3604aee3
+du
+364	.
+----->>>>> 
++3 sensors
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND                CREATED              STATUS              PORTS                                            NAMES
+15997a1d2529        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   13 seconds ago       Up 10 seconds       1883/tcp, 8883/tcp                               newsensor3          
+f3ca000df913        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   About a minute ago   Up About a minute   1883/tcp, 8883/tcp                               newsensor2          
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"            29 hours ago         Up 26 hours         8883/tcp, 1883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+401fcbb15ac4        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"            4 days ago           Up 14 minutes       1883/tcp, 8883/tcp                               sensor20            
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"            2 weeks ago          Up 18 minutes       0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-bash---python
+        |        |-2*[docker---4*[{docker}]]
+        |        |-docker---6*[{docker}]
+        |        |-2*[python]
+        |        `-19*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 16:14:40 up 1 day,  5:35,  2 users,  load average: 1.37, 1.30, 1.30
+Tasks:  85 total,   2 running,  83 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.8/21.8   83[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 86.9/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   2.3m  0.0  1.3   0:29.93 S systemd
+   79 root      20   0   11.6m   1.5m  0.0  0.8   0:13.27 S  `- systemd-journal
+   98 root      20   0   10.5m   0.8m  0.0  0.4   0:00.87 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.8m  0.0  0.4   0:03.03 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.7m  0.0  0.4   0:01.09 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:21.07 S  `- rngd
+  125 avahi     20   0    3.3m   0.6m  0.0  0.3   0:01.46 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:08.31 S  `- crond
+  130 root      20   0    6.5m   0.5m  0.0  0.3   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   1.1m  0.0  0.6   0:02.81 S      `- sshd
+ 1141 root      20   0    3.3m   1.1m  0.0  0.6   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   3.7m  0.0  2.0   0:05.62 S              `- do+
+ 1203 root      20   0   10.8m   1.5m  0.0  0.8   0:36.29 S      `- sshd
+ 1207 root      20   0    3.4m   1.5m  0.0  0.8   0:00.85 S          `- bash
+ 2464 root      20   0    3.2m   1.2m  0.0  0.7   0:00.03 S              `- ga+
+ 2476 root      20   0    4.9m   1.4m 20.7  0.7   0:00.15 R                  `+
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:15.77 S  `- ifplugd
+  132 root      20   0  938.1m  11.1m  0.0  6.0   1:40.41 S  `- docker
+  979 root      20   0  816.8m   2.0m  0.0  1.1   0:07.84 S      `- docker
+  990 root      20   0    3.1m   0.6m  0.0  0.3   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m  10.8m  0.0  5.9   0:06.44 S          `- python
+ 1294 root      20   0   55.7m  40.0m 72.4 21.6 526:09.60 R              `- py+
+ 1395 root      20   0  832.8m   5.8m  0.0  3.1   0:01.79 S      `- docker
+ 1407 root      20   0  816.8m   4.8m  0.0  2.6   0:00.30 S      `- docker
+ 1417 root      20   0    3.0m   0.8m  0.0  0.5   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   0.9m  0.0  0.5   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   0.8m  0.0  0.4   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.9m  0.0  0.5   0:02.08 S          `- mosqui+
+ 2049 root      20   0    3.1m   0.9m  0.0  0.5   0:00.41 S      `- bash
+ 2182 root      20   0   11.6m   5.5m  0.0  3.0   0:04.41 S          `- python
+ 2399 root      20   0   11.6m   7.0m  0.0  3.8   0:02.57 S      `- python
+ 2449 root      20   0   11.6m   7.1m  0.0  3.8   0:02.31 S      `- python
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:53.50 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.3m  0.0  0.2   0:00.73 S  `- dhcpcd
+ 1138 root      20   0    5.1m   1.3m  0.0  0.7   0:01.20 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.6   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:22.79 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   3:33.53 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.08 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0  10:08.85 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   4:53.98 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.47 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.79 S  `- kworker/u2:2
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:42.45 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:05.07 S  `- kworker/u2:1
+ 2219 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+ 2410 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1
+ 2419 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          93          44           1          46          24
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2776312   3091156  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     712     93964   1% /dev/shm
+tmpfs              94676     496     94180   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2776312   3091156  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2776312   3091156  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+none             6205744 2776312   3091156  48% /var/lib/docker/aufs/mnt/401fcbb15ac4c69bcda74648ef351e63b9d2063f630c7af7e47e041fbf095180
+none             6205744 2776312   3091156  48% /var/lib/docker/aufs/mnt/f3ca000df91386bd5a581c8992380393901b20ff481b4ac5457deabd3604aee3
+none             6205744 2776312   3091156  48% /var/lib/docker/aufs/mnt/15997a1d25293069290ef8a78ee1fa07a607f25ffbe8c3d419bc5fd3ebbffa86
+du
+376	.
+----->>>>> 
++4 sensors
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND                CREATED              STATUS              PORTS                                            NAMES
+96734e18371d        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   16 seconds ago       Up 13 seconds       1883/tcp, 8883/tcp                               newsensor4          
+15997a1d2529        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   39 seconds ago       Up 36 seconds       1883/tcp, 8883/tcp                               newsensor3          
+f3ca000df913        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   About a minute ago   Up About a minute   1883/tcp, 8883/tcp                               newsensor2          
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"            29 hours ago         Up 26 hours         8883/tcp, 1883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+401fcbb15ac4        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"            4 days ago           Up 14 minutes       8883/tcp, 1883/tcp                               sensor20            
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"            2 weeks ago          Up 19 minutes       0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-bash---python
+        |        |-2*[docker---4*[{docker}]]
+        |        |-docker---6*[{docker}]
+        |        |-3*[python]
+        |        `-20*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 16:15:07 up 1 day,  5:35,  2 users,  load average: 2.17, 1.48, 1.36
+Tasks:  86 total,   2 running,  84 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.8/21.8   83[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 87.1/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   1.3m  0.0  0.7   0:30.05 S systemd
+   79 root      20   0   11.6m   1.2m  0.0  0.6   0:13.47 S  `- systemd-journal
+   98 root      20   0   10.5m   0.7m  0.0  0.4   0:00.90 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.4m  0.0  0.2   0:03.04 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.5m  0.0  0.3   0:01.11 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:21.08 S  `- rngd
+  125 avahi     20   0    3.3m   0.4m  0.0  0.2   0:01.47 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:08.32 S  `- crond
+  130 root      20   0    6.5m   0.5m  0.0  0.3   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   1.1m  0.0  0.6   0:02.81 S      `- sshd
+ 1141 root      20   0    3.3m   1.0m  0.0  0.6   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   3.1m  0.0  1.7   0:05.62 S              `- do+
+ 1203 root      20   0   10.8m   1.4m  0.0  0.7   0:36.45 S      `- sshd
+ 1207 root      20   0    3.4m   1.3m  0.0  0.7   0:00.91 S          `- bash
+ 2505 root      20   0    3.2m   1.2m  0.0  0.7   0:00.03 S              `- ga+
+ 2518 root      20   0    4.9m   1.4m 16.7  0.7   0:00.15 R                  `+
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:15.79 S  `- ifplugd
+  132 root      20   0  946.1m  10.2m  0.0  5.5   1:41.37 S  `- docker
+  979 root      20   0  816.8m   2.0m  0.0  1.1   0:07.86 S      `- docker
+  990 root      20   0    3.1m   0.5m  0.0  0.3   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m  10.5m  0.0  5.7   0:06.44 S          `- python
+ 1294 root      20   0   56.4m  40.3m 60.0 21.8 526:26.78 R              `- py+
+ 1395 root      20   0  832.8m   4.2m  3.3  2.3   0:02.00 S      `- docker
+ 1407 root      20   0  816.8m   3.2m  0.0  1.7   0:00.30 S      `- docker
+ 1417 root      20   0    3.0m   0.5m  0.0  0.3   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   0.6m  0.0  0.3   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   0.5m  0.0  0.3   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.7m  0.0  0.4   0:02.17 S          `- mosqui+
+ 2049 root      20   0    3.1m   0.5m  0.0  0.3   0:00.41 S      `- bash
+ 2182 root      20   0   11.6m   5.1m  0.0  2.8   0:04.56 S          `- python
+ 2399 root      20   0   11.6m   5.2m  0.0  2.8   0:02.72 S      `- python
+ 2449 root      20   0   11.6m   5.2m  0.0  2.8   0:02.46 S      `- python
+ 2490 root      20   0   11.6m   6.9m  3.3  3.7   0:02.43 S      `- python
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:53.53 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.3m  0.0  0.2   0:00.75 S  `- dhcpcd
+ 1138 root      20   0    5.1m   0.7m  0.0  0.4   0:01.26 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.6   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:22.90 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  3.3  0.0   3:33.62 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.08 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0  10:09.49 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   4:54.58 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.48 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.80 S  `- kworker/u2:2
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:42.50 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:05.08 S  `- kworker/u2:1
+ 2219 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+ 2410 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1
+ 2419 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184          98          48           1          37          23
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2776420   3091048  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     852     93824   1% /dev/shm
+tmpfs              94676     524     94152   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2776420   3091048  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2776420   3091048  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+none             6205744 2776420   3091048  48% /var/lib/docker/aufs/mnt/401fcbb15ac4c69bcda74648ef351e63b9d2063f630c7af7e47e041fbf095180
+none             6205744 2776420   3091048  48% /var/lib/docker/aufs/mnt/f3ca000df91386bd5a581c8992380393901b20ff481b4ac5457deabd3604aee3
+none             6205744 2776420   3091048  48% /var/lib/docker/aufs/mnt/15997a1d25293069290ef8a78ee1fa07a607f25ffbe8c3d419bc5fd3ebbffa86
+none             6205744 2776420   3091048  48% /var/lib/docker/aufs/mnt/96734e18371d73f81f6860520a6c5a8c34338d825d2244a766907436a5710770
+du
+384	.
+----->>>>> 
++5 sensors
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND                CREATED              STATUS              PORTS                                            NAMES
+f364991a194f        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   19 seconds ago       Up 16 seconds       1883/tcp, 8883/tcp                               newsensor5          
+96734e18371d        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   44 seconds ago       Up 41 seconds       1883/tcp, 8883/tcp                               newsensor4          
+15997a1d2529        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   About a minute ago   Up About a minute   1883/tcp, 8883/tcp                               newsensor3          
+f3ca000df913        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   2 minutes ago        Up 2 minutes        1883/tcp, 8883/tcp                               newsensor2          
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"            29 hours ago         Up 26 hours         8883/tcp, 1883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+401fcbb15ac4        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"            4 days ago           Up 15 minutes       8883/tcp, 1883/tcp                               sensor20            
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"            2 weeks ago          Up 19 minutes       0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-bash---python
+        |        |-2*[docker---4*[{docker}]]
+        |        |-docker---7*[{docker}]
+        |        |-4*[python]
+        |        `-23*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 16:15:35 up 1 day,  5:36,  2 users,  load average: 2.16, 1.56, 1.39
+Tasks:  87 total,   2 running,  85 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.8/21.8   83[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 89.7/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   1.3m  0.0  0.7   0:30.17 S systemd
+   79 root      20   0   11.6m   1.3m  0.0  0.7   0:13.66 S  `- systemd-journal
+   98 root      20   0   10.5m   0.6m  0.0  0.3   0:00.92 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.4m  0.0  0.2   0:03.06 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.5m  0.0  0.3   0:01.13 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:21.10 S  `- rngd
+  125 avahi     20   0    3.3m   0.5m  0.0  0.2   0:01.48 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:08.32 S  `- crond
+  130 root      20   0    6.5m   0.5m  0.0  0.3   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   1.0m  0.0  0.6   0:02.81 S      `- sshd
+ 1141 root      20   0    3.3m   0.8m  0.0  0.4   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   2.6m  0.0  1.4   0:05.64 S              `- do+
+ 1203 root      20   0   10.8m   1.1m  0.0  0.6   0:36.58 S      `- sshd
+ 1207 root      20   0    3.4m   1.1m  0.0  0.6   0:00.96 S          `- bash
+ 2555 root      20   0    3.2m   1.2m  0.0  0.7   0:00.04 S              `- ga+
+ 2567 root      20   0    4.9m   1.4m 20.0  0.7   0:00.16 R                  `+
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:15.81 S  `- ifplugd
+  132 root      20   0  970.1m   9.5m  0.0  5.1   1:42.29 S  `- docker
+  979 root      20   0  816.8m   1.6m  0.0  0.9   0:07.86 S      `- docker
+  990 root      20   0    3.1m   0.5m  0.0  0.3   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m  10.4m  0.0  5.6   0:06.44 S          `- python
+ 1294 root      20   0   56.9m  40.9m 60.0 22.1 526:43.90 R              `- py+
+ 1395 root      20   0  840.9m   3.6m  0.0  1.9   0:02.32 S      `- docker
+ 1407 root      20   0  816.8m   2.1m  0.0  1.1   0:00.30 S      `- docker
+ 1417 root      20   0    3.0m   0.5m  0.0  0.3   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   0.6m  0.0  0.3   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   0.5m  0.0  0.3   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.7m  0.0  0.4   0:02.29 S          `- mosqui+
+ 2049 root      20   0    3.1m   0.5m  0.0  0.3   0:00.41 S      `- bash
+ 2182 root      20   0   11.6m   5.1m  0.0  2.7   0:04.74 S          `- python
+ 2399 root      20   0   11.6m   5.0m  0.0  2.7   0:02.91 S      `- python
+ 2449 root      20   0   11.6m   5.0m  0.0  2.7   0:02.61 S      `- python
+ 2490 root      20   0   11.6m   5.0m  0.0  2.7   0:02.59 S      `- python
+ 2532 root      20   0   11.6m   5.5m  0.0  3.0   0:02.28 S      `- python
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:53.56 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.3m  0.0  0.2   0:00.76 S  `- dhcpcd
+ 1138 root      20   0    5.1m   0.6m  0.0  0.3   0:01.32 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.6   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:23.01 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   3:33.72 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.08 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0  10:10.10 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  3.3  0.0   4:55.25 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.48 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.81 S  `- kworker/u2:2
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:42.55 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:05.08 S  `- kworker/u2:1
+ 2219 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+ 2410 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1
+ 2419 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184         103          44           1          37          18
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2776548   3090920  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676     992     93684   2% /dev/shm
+tmpfs              94676     552     94124   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2776548   3090920  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2776548   3090920  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+none             6205744 2776548   3090920  48% /var/lib/docker/aufs/mnt/401fcbb15ac4c69bcda74648ef351e63b9d2063f630c7af7e47e041fbf095180
+none             6205744 2776548   3090920  48% /var/lib/docker/aufs/mnt/f3ca000df91386bd5a581c8992380393901b20ff481b4ac5457deabd3604aee3
+none             6205744 2776548   3090920  48% /var/lib/docker/aufs/mnt/15997a1d25293069290ef8a78ee1fa07a607f25ffbe8c3d419bc5fd3ebbffa86
+none             6205744 2776548   3090920  48% /var/lib/docker/aufs/mnt/96734e18371d73f81f6860520a6c5a8c34338d825d2244a766907436a5710770
+none             6205744 2776548   3090920  48% /var/lib/docker/aufs/mnt/f364991a194faba2a4b6bf8acd8b1c0d6259d0197391e3786206ca4eb8c5d2c5
+du
+396	.
+----->>>>> 
++6 sensors
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND                CREATED              STATUS              PORTS                                            NAMES
+0d50ae7883b7        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   17 seconds ago       Up 13 seconds       1883/tcp, 8883/tcp                               newsensor6          
+f364991a194f        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   46 seconds ago       Up 42 seconds       1883/tcp, 8883/tcp                               newsensor5          
+96734e18371d        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   About a minute ago   Up About a minute   1883/tcp, 8883/tcp                               newsensor4          
+15997a1d2529        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   About a minute ago   Up About a minute   1883/tcp, 8883/tcp                               newsensor3          
+f3ca000df913        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   2 minutes ago        Up 2 minutes        8883/tcp, 1883/tcp                               newsensor2          
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"            29 hours ago         Up 26 hours         8883/tcp, 1883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+401fcbb15ac4        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"            4 days ago           Up 15 minutes       1883/tcp, 8883/tcp                               sensor20            
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"            2 weeks ago          Up 20 minutes       0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-bash---python
+        |        |-2*[docker---4*[{docker}]]
+        |        |-docker---8*[{docker}]
+        |        |-5*[python]
+        |        `-26*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      `-sshd---bash---gather.sh---pstree
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 16:16:02 up 1 day,  5:36,  2 users,  load average: 2.04, 1.58, 1.41
+Tasks:  88 total,   2 running,  86 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.8/21.8   83[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 91.2/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   1.2m  0.0  0.7   0:30.31 S systemd
+   79 root      20   0   11.6m   1.2m  0.0  0.7   0:13.90 S  `- systemd-journal
+   98 root      20   0   10.5m   0.5m  0.0  0.3   0:00.94 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.4m  0.0  0.2   0:03.08 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.4m  0.0  0.2   0:01.16 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:21.12 S  `- rngd
+  125 avahi     20   0    3.3m   0.4m  0.0  0.2   0:01.49 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:08.32 S  `- crond
+  130 root      20   0    6.5m   0.4m  0.0  0.2   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   0.8m  0.0  0.4   0:02.81 S      `- sshd
+ 1141 root      20   0    3.3m   0.5m  0.0  0.2   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   2.0m  0.0  1.1   0:05.64 S              `- do+
+ 1203 root      20   0   10.8m   0.8m  0.0  0.5   0:36.71 S      `- sshd
+ 1207 root      20   0    3.4m   0.6m  0.0  0.3   0:01.02 S          `- bash
+ 2598 root      20   0    3.2m   0.8m  0.0  0.4   0:00.04 S              `- ga+
+ 2612 root      20   0    4.9m   1.4m 18.8  0.7   0:00.17 R                  `+
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:15.84 S  `- ifplugd
+  132 root      20   0  994.1m   9.7m  0.0  5.2   1:43.27 S  `- docker
+  979 root      20   0  816.8m   1.5m  0.0  0.8   0:07.86 S      `- docker
+  990 root      20   0    3.1m   0.5m  0.0  0.3   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m  10.4m  0.0  5.6   0:06.44 S          `- python
+ 1294 root      20   0   57.5m  41.3m 65.6 22.3 526:57.47 R              `- py+
+ 1395 root      20   0  849.2m   3.4m  0.0  1.9   0:02.67 S      `- docker
+ 1407 root      20   0  816.8m   2.3m  0.0  1.3   0:00.31 S      `- docker
+ 1417 root      20   0    3.0m   0.5m  0.0  0.3   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   0.6m  0.0  0.3   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   0.5m  0.0  0.3   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.7m  0.0  0.4   0:02.42 S          `- mosqui+
+ 2049 root      20   0    3.1m   0.5m  0.0  0.3   0:00.41 S      `- bash
+ 2182 root      20   0   11.6m   5.1m  0.0  2.7   0:04.90 S          `- python
+ 2399 root      20   0   11.6m   5.0m  0.0  2.7   0:03.07 S      `- python
+ 2449 root      20   0   11.6m   5.0m  0.0  2.7   0:02.81 S      `- python
+ 2490 root      20   0   11.6m   5.0m  0.0  2.7   0:02.75 S      `- python
+ 2532 root      20   0   11.6m   5.0m  0.0  2.7   0:02.44 S      `- python
+ 2581 root      20   0   11.6m   5.0m  0.0  2.7   0:02.40 S      `- python
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:53.59 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.3m  0.0  0.2   0:00.77 S  `- dhcpcd
+ 1138 root      20   0    5.1m   0.6m  0.0  0.3   0:01.39 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:23.12 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   3:33.82 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.08 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0  10:10.79 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  3.1  0.0   4:56.06 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.49 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.81 S  `- kworker/u2:2
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:42.60 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:05.09 S  `- kworker/u2:1
+ 2219 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+ 2410 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1
+ 2419 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184         108          46           1          29          17
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2776664   3090804  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676    1128     93548   2% /dev/shm
+tmpfs              94676     580     94096   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2776664   3090804  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2776664   3090804  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+none             6205744 2776664   3090804  48% /var/lib/docker/aufs/mnt/401fcbb15ac4c69bcda74648ef351e63b9d2063f630c7af7e47e041fbf095180
+none             6205744 2776664   3090804  48% /var/lib/docker/aufs/mnt/f3ca000df91386bd5a581c8992380393901b20ff481b4ac5457deabd3604aee3
+none             6205744 2776664   3090804  48% /var/lib/docker/aufs/mnt/15997a1d25293069290ef8a78ee1fa07a607f25ffbe8c3d419bc5fd3ebbffa86
+none             6205744 2776664   3090804  48% /var/lib/docker/aufs/mnt/96734e18371d73f81f6860520a6c5a8c34338d825d2244a766907436a5710770
+none             6205744 2776664   3090804  48% /var/lib/docker/aufs/mnt/f364991a194faba2a4b6bf8acd8b1c0d6259d0197391e3786206ca4eb8c5d2c5
+none             6205744 2776664   3090804  48% /var/lib/docker/aufs/mnt/0d50ae7883b79b4eb47fa22f8d875ddd5fe0c2235b1d76e24bbe059e0fc9038f
+du
+408	.
+----->>>>> 
+Severe Performance issues
++7 sensors
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND                CREATED             STATUS              PORTS                                            NAMES
+13777648eb0f        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   10 minutes ago      Up 8 minutes        1883/tcp, 8883/tcp                               newsensor7          
+0d50ae7883b7        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   12 minutes ago      Up 12 minutes       1883/tcp, 8883/tcp                               newsensor6          
+f364991a194f        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   12 minutes ago      Up 12 minutes       1883/tcp, 8883/tcp                               newsensor5          
+96734e18371d        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   13 minutes ago      Up 13 minutes       1883/tcp, 8883/tcp                               newsensor4          
+15997a1d2529        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   13 minutes ago      Up 13 minutes       1883/tcp, 8883/tcp                               newsensor3          
+f3ca000df913        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   14 minutes ago      Up 14 minutes       1883/tcp, 8883/tcp                               newsensor2          
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"            29 hours ago        Up 26 hours         8883/tcp, 1883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+401fcbb15ac4        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"            4 days ago          Up 27 minutes       1883/tcp, 8883/tcp                               sensor20            
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"            2 weeks ago         Up 31 minutes       0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-bash---python
+        |        |-2*[docker---4*[{docker}]]
+        |        |-docker---9*[{docker}]
+        |        |-6*[python]
+        |        `-29*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      |-sshd---bash---gather.sh---pstree
+        |      `-sshd---bash---top
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 16:27:56 up 1 day,  5:48,  3 users,  load average: 13.48, 11.88, 7.08
+Tasks:  91 total,   2 running,  89 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.5/21.9   82[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 89.4/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   1.1m  0.0  0.6   0:32.10 S systemd
+   79 root      20   0   11.6m   1.1m  0.0  0.6   0:15.18 S  `- systemd-journal
+   98 root      20   0   10.5m   0.3m  0.0  0.2   0:01.23 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.3m  0.0  0.2   0:03.32 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.3m  0.0  0.2   0:01.26 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:21.60 S  `- rngd
+  125 avahi     20   0    3.3m   0.3m  0.0  0.1   0:01.52 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.5m  0.0  0.3   0:08.57 S  `- crond
+  130 root      20   0    6.5m   0.4m  0.0  0.2   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   0.9m  0.0  0.5   0:02.90 S      `- sshd
+ 1141 root      20   0    3.3m   0.3m  0.0  0.2   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   1.5m  0.0  0.8   0:06.25 S              `- do+
+ 1203 root      20   0   10.8m   0.7m  0.0  0.4   0:38.40 S      `- sshd
+ 1207 root      20   0    3.4m   0.3m  0.0  0.2   0:01.53 S          `- bash
+ 2671 root      20   0    3.2m   0.6m  0.0  0.3   0:00.28 S              `- ga+
+ 2687 root      20   0    4.9m   1.4m 22.2  0.7   0:00.16 R                  `+
+ 2618 root      20   0   10.8m   0.9m  0.0  0.5   0:01.06 S      `- sshd
+ 2622 root      20   0    3.4m   0.3m  0.0  0.2   0:00.13 S          `- bash
+ 2626 root      20   0    4.9m   0.9m  0.0  0.5   0:10.26 S              `- top
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:16.69 S  `- ifplugd
+  132 root      20   0 1018.1m   8.3m  0.0  4.5   1:50.01 S  `- docker
+  979 root      20   0  816.8m   1.2m  0.0  0.6   0:08.63 S      `- docker
+  990 root      20   0    3.1m   0.3m  0.0  0.1   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m   9.3m  0.0  5.0   0:06.44 S          `- python
+ 1294 root      20   0   46.7m  31.1m 66.7 16.8 528:29.44 R              `- py+
+ 1395 root      20   0  857.7m   4.3m  0.0  2.3   0:11.44 S      `- docker
+ 1407 root      20   0  816.8m   1.2m  0.0  0.6   0:01.04 S      `- docker
+ 1417 root      20   0    3.0m   0.2m  0.0  0.1   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   0.3m  0.0  0.1   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   0.2m  0.0  0.1   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.5m  0.0  0.3   0:06.11 S          `- mosqui+
+ 2049 root      20   0    3.1m   0.3m  0.0  0.1   0:00.41 S      `- bash
+ 2182 root      20   0   11.6m   4.8m  0.0  2.6   0:08.63 S          `- python
+ 2399 root      20   0   11.6m   4.7m  0.0  2.6   0:06.57 S      `- python
+ 2449 root      20   0   11.6m   4.7m  0.0  2.5   0:06.37 S      `- python
+ 2490 root      20   0   11.6m   4.7m  0.0  2.6   0:06.15 S      `- python
+ 2532 root      20   0   11.6m   4.7m  0.0  2.6   0:05.87 S      `- python
+ 2581 root      20   0   11.6m   4.8m  0.0  2.6   0:06.22 S      `- python
+ 2648 root      20   0   11.6m   4.7m  0.0  2.6   0:09.20 S      `- python
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:54.37 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.2m  0.0  0.1   0:00.95 S  `- dhcpcd
+ 1138 root      20   0    5.1m   0.4m  0.0  0.2   0:01.72 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:24.43 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  3.7  0.0   3:34.87 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.31 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0  11:30.52 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  3.7  0.0   5:35.83 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.55 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.85 S  `- kworker/u2:2
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:43.31 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:05.10 S  `- kworker/u2:1
+ 2419 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+ 2670 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184         103          46           1          34          19
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2776812   3090656  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676    1268     93408   2% /dev/shm
+tmpfs              94676     636     94040   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2776812   3090656  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2776812   3090656  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+none             6205744 2776812   3090656  48% /var/lib/docker/aufs/mnt/401fcbb15ac4c69bcda74648ef351e63b9d2063f630c7af7e47e041fbf095180
+none             6205744 2776812   3090656  48% /var/lib/docker/aufs/mnt/f3ca000df91386bd5a581c8992380393901b20ff481b4ac5457deabd3604aee3
+none             6205744 2776812   3090656  48% /var/lib/docker/aufs/mnt/15997a1d25293069290ef8a78ee1fa07a607f25ffbe8c3d419bc5fd3ebbffa86
+none             6205744 2776812   3090656  48% /var/lib/docker/aufs/mnt/96734e18371d73f81f6860520a6c5a8c34338d825d2244a766907436a5710770
+none             6205744 2776812   3090656  48% /var/lib/docker/aufs/mnt/f364991a194faba2a4b6bf8acd8b1c0d6259d0197391e3786206ca4eb8c5d2c5
+none             6205744 2776812   3090656  48% /var/lib/docker/aufs/mnt/0d50ae7883b79b4eb47fa22f8d875ddd5fe0c2235b1d76e24bbe059e0fc9038f
+none             6205744 2776812   3090656  48% /var/lib/docker/aufs/mnt/13777648eb0f9e6659b62986f53afba4838ed9293c147acf2a61b005e19d56f1
+du
+416	.
+----->>>>> 
+Pi back in action for some reason?
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND                CREATED             STATUS              PORTS                                            NAMES
+13777648eb0f        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   11 minutes ago      Up 9 minutes        1883/tcp, 8883/tcp                               newsensor7          
+0d50ae7883b7        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   13 minutes ago      Up 13 minutes       1883/tcp, 8883/tcp                               newsensor6          
+f364991a194f        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   14 minutes ago      Up 14 minutes       8883/tcp, 1883/tcp                               newsensor5          
+96734e18371d        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   14 minutes ago      Up 14 minutes       1883/tcp, 8883/tcp                               newsensor4          
+15997a1d2529        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   14 minutes ago      Up 14 minutes       1883/tcp, 8883/tcp                               newsensor3          
+f3ca000df913        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   15 minutes ago      Up 15 minutes       1883/tcp, 8883/tcp                               newsensor2          
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"            29 hours ago        Up 26 hours         8883/tcp, 1883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+401fcbb15ac4        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"            4 days ago          Up 28 minutes       1883/tcp, 8883/tcp                               sensor20            
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"            2 weeks ago         Up 33 minutes       0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-bash---python
+        |        |-2*[docker---4*[{docker}]]
+        |        |-docker---9*[{docker}]
+        |        |-6*[python]
+        |        `-29*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      |-sshd---bash---gather.sh---pstree
+        |      `-sshd---bash---top
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 16:29:21 up 1 day,  5:49,  3 users,  load average: 4.93, 9.52, 6.64
+Tasks:  91 total,   4 running,  87 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.5/21.9   82[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 90.0/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   1.2m  0.0  0.6   0:32.10 S systemd
+   79 root      20   0   11.6m   1.2m  0.0  0.6   0:15.28 S  `- systemd-journal
+   98 root      20   0   10.5m   0.3m  0.0  0.2   0:01.23 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.3m  0.0  0.2   0:03.34 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.3m  0.0  0.2   0:01.26 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:21.63 S  `- rngd
+  125 avahi     20   0    3.3m   0.3m  0.0  0.1   0:01.52 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.7m  0.0  0.4   0:08.57 S  `- crond
+  130 root      20   0    6.5m   0.4m  0.0  0.2   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   0.9m  0.0  0.5   0:02.90 S      `- sshd
+ 1141 root      20   0    3.3m   0.3m  0.0  0.2   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   2.1m  0.0  1.2   0:06.27 S              `- do+
+ 1203 root      20   0   10.8m   0.9m  0.0  0.5   0:38.40 S      `- sshd
+ 1207 root      20   0    3.4m   1.0m  0.0  0.6   0:01.60 S          `- bash
+ 2702 root      20   0    3.2m   1.2m  0.0  0.7   0:00.04 S              `- ga+
+ 2714 root      20   0    4.9m   1.4m 20.0  0.7   0:00.15 R                  `+
+ 2618 root      20   0   10.8m   0.9m  0.0  0.5   0:01.16 S      `- sshd
+ 2622 root      20   0    3.4m   0.3m  0.0  0.2   0:00.13 S          `- bash
+ 2626 root      20   0    4.9m   0.8m  6.7  0.5   0:13.42 R              `- top
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:16.74 S  `- ifplugd
+  132 root      20   0 1018.1m   8.7m  0.0  4.7   1:50.88 S  `- docker
+  979 root      20   0  816.8m   2.0m  0.0  1.1   0:08.63 S      `- docker
+  990 root      20   0    3.1m   0.3m  0.0  0.1   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m   9.3m  0.0  5.0   0:06.44 S          `- python
+ 1294 root      20   0   46.7m  30.8m 73.3 16.7 529:33.93 R              `- py+
+ 1395 root      20   0  857.7m   4.8m  0.0  2.6   0:12.68 S      `- docker
+ 1407 root      20   0  816.8m   1.2m  0.0  0.7   0:01.04 S      `- docker
+ 1417 root      20   0    3.0m   0.2m  0.0  0.1   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   0.3m  0.0  0.1   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   0.2m  0.0  0.1   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.6m  0.0  0.3   0:06.55 S          `- mosqui+
+ 2049 root      20   0    3.1m   0.3m  0.0  0.1   0:00.41 S      `- bash
+ 2182 root      20   0   11.6m   5.0m  0.0  2.7   0:09.09 S          `- python
+ 2399 root      20   0   11.6m   5.0m  0.0  2.7   0:07.02 S      `- python
+ 2449 root      20   0   11.6m   5.0m  0.0  2.7   0:06.86 S      `- python
+ 2490 root      20   0   11.6m   5.0m  0.0  2.7   0:06.64 S      `- python
+ 2532 root      20   0   11.6m   5.0m  0.0  2.7   0:06.34 S      `- python
+ 2581 root      20   0   11.6m   5.0m  0.0  2.7   0:06.68 S      `- python
+ 2648 root      20   0   11.6m   4.9m  0.0  2.7   0:09.66 S      `- python
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:54.42 R  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.2m  0.0  0.1   0:00.95 S  `- dhcpcd
+ 1138 root      20   0    5.1m   0.4m  0.0  0.2   0:01.72 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  0.0  0.0   0:24.72 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   3:35.13 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.31 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m  0.0  0.0  11:31.77 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   5:36.62 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.56 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.86 S  `- kworker/u2:2
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:43.41 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:05.10 S  `- kworker/u2:1
+ 2419 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+ 2670 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184         104          45           1          35          18
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2776852   3090616  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676    1268     93408   2% /dev/shm
+tmpfs              94676     636     94040   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2776852   3090616  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2776852   3090616  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+none             6205744 2776852   3090616  48% /var/lib/docker/aufs/mnt/401fcbb15ac4c69bcda74648ef351e63b9d2063f630c7af7e47e041fbf095180
+none             6205744 2776852   3090616  48% /var/lib/docker/aufs/mnt/f3ca000df91386bd5a581c8992380393901b20ff481b4ac5457deabd3604aee3
+none             6205744 2776852   3090616  48% /var/lib/docker/aufs/mnt/15997a1d25293069290ef8a78ee1fa07a607f25ffbe8c3d419bc5fd3ebbffa86
+none             6205744 2776852   3090616  48% /var/lib/docker/aufs/mnt/96734e18371d73f81f6860520a6c5a8c34338d825d2244a766907436a5710770
+none             6205744 2776852   3090616  48% /var/lib/docker/aufs/mnt/f364991a194faba2a4b6bf8acd8b1c0d6259d0197391e3786206ca4eb8c5d2c5
+none             6205744 2776852   3090616  48% /var/lib/docker/aufs/mnt/0d50ae7883b79b4eb47fa22f8d875ddd5fe0c2235b1d76e24bbe059e0fc9038f
+none             6205744 2776852   3090616  48% /var/lib/docker/aufs/mnt/13777648eb0f9e6659b62986f53afba4838ed9293c147acf2a61b005e19d56f1
+du
+428	.
+----->>>>> 
++8 sensors
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND                CREATED             STATUS              PORTS                                            NAMES
+fea454e6890c        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   24 seconds ago      Up 18 seconds       1883/tcp, 8883/tcp                               newsensor8          
+13777648eb0f        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   12 minutes ago      Up 10 minutes       1883/tcp, 8883/tcp                               newsensor7          
+0d50ae7883b7        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   14 minutes ago      Up 14 minutes       1883/tcp, 8883/tcp                               newsensor6          
+f364991a194f        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   14 minutes ago      Up 14 minutes       8883/tcp, 1883/tcp                               newsensor5          
+96734e18371d        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   15 minutes ago      Up 15 minutes       1883/tcp, 8883/tcp                               newsensor4          
+15997a1d2529        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   15 minutes ago      Up 15 minutes       1883/tcp, 8883/tcp                               newsensor3          
+f3ca000df913        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   16 minutes ago      Up 16 minutes       1883/tcp, 8883/tcp                               newsensor2          
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"            29 hours ago        Up 26 hours         1883/tcp, 8883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+401fcbb15ac4        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"            4 days ago          Up 29 minutes       8883/tcp, 1883/tcp                               sensor20            
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"            2 weeks ago         Up 33 minutes       0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-bash---python
+        |        |-2*[docker---4*[{docker}]]
+        |        |-docker---9*[{docker}]
+        |        |-7*[python]
+        |        `-32*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      |-sshd---bash---gather.sh---pstree
+        |      `-sshd---bash---top
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 16:29:58 up 1 day,  5:50,  3 users,  load average: 3.89, 8.68, 6.48
+Tasks:  93 total,   2 running,  91 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.5/21.9   82[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 89.1/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   0.9m  0.0  0.5   0:32.22 S systemd
+   79 root      20   0   11.6m   0.7m  0.0  0.4   0:15.56 S  `- systemd-journal
+   98 root      20   0   10.5m   0.4m  0.0  0.2   0:01.23 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.2m  0.0  0.1   0:03.36 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.3m  0.0  0.2   0:01.28 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:21.66 S  `- rngd
+  125 avahi     20   0    3.3m   0.3m  0.0  0.2   0:01.55 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.6m  0.0  0.3   0:08.57 S  `- crond
+  130 root      20   0    6.5m   0.4m  0.0  0.2   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   0.7m  0.0  0.4   0:02.90 S      `- sshd
+ 1141 root      20   0    3.3m   0.3m  0.0  0.2   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   1.5m  0.0  0.8   0:06.27 S              `- do+
+ 1203 root      20   0   10.8m   0.7m  0.0  0.4   0:38.40 S      `- sshd
+ 1207 root      20   0    3.4m   0.4m  0.0  0.2   0:01.69 S          `- bash
+ 2747 root      20   0    3.2m   0.7m  0.0  0.4   0:00.05 S              `- ga+
+ 2760 root      20   0    4.9m   1.4m 15.8  0.7   0:00.17 R                  `+
+ 2618 root      20   0   10.8m   0.8m  0.0  0.5   0:01.21 S      `- sshd
+ 2622 root      20   0    3.4m   0.3m  0.0  0.2   0:00.13 S          `- bash
+ 2626 root      20   0    4.9m   0.9m  0.0  0.5   0:14.93 S              `- top
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:16.77 S  `- ifplugd
+  132 root      20   0 1042.1m   8.5m  0.0  4.6   1:52.02 S  `- docker
+  979 root      20   0  816.8m   1.3m  0.0  0.7   0:08.63 S      `- docker
+  990 root      20   0    3.1m   0.3m  0.0  0.1   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m   9.3m  0.0  5.0   0:06.44 S          `- python
+ 1294 root      20   0   46.7m  30.5m 52.6 16.5 529:54.83 R              `- py+
+ 1395 root      20   0  857.7m   4.1m  0.0  2.2   0:13.27 S      `- docker
+ 1407 root      20   0  816.8m   1.3m  0.0  0.7   0:01.06 S      `- docker
+ 1417 root      20   0    3.0m   0.2m  0.0  0.1   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   0.3m  0.0  0.1   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   0.2m  0.0  0.1   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.4m  0.0  0.2   0:06.76 S          `- mosqui+
+ 2049 root      20   0    3.1m   0.3m  0.0  0.1   0:00.41 S      `- bash
+ 2182 root      20   0   11.6m   4.5m  0.0  2.4   0:09.32 S          `- python
+ 2399 root      20   0   11.6m   4.5m  0.0  2.4   0:07.25 S      `- python
+ 2449 root      20   0   11.6m   4.5m  0.0  2.4   0:07.09 S      `- python
+ 2490 root      20   0   11.6m   4.5m  0.0  2.4   0:06.85 S      `- python
+ 2532 root      20   0   11.6m   4.5m  0.0  2.4   0:06.57 S      `- python
+ 2581 root      20   0   11.6m   4.5m  0.0  2.4   0:06.92 S      `- python
+ 2648 root      20   0   11.6m   4.5m  0.0  2.4   0:09.90 S      `- python
+ 2729 root      20   0   11.6m   4.5m  0.0  2.5   0:02.48 S      `- python
+  133 root      20   0    7.4m   3.0m  0.0  1.6   0:54.47 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.2m  0.0  0.1   0:00.98 S  `- dhcpcd
+ 1138 root      20   0    5.1m   0.5m  0.0  0.2   0:01.80 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  2.6  0.0   0:24.90 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   3:35.28 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.31 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m 15.8  0.0  11:32.93 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   5:37.88 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.57 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.87 S  `- kworker/u2:2
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:43.44 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:05.10 S  `- kworker/u2:1
+ 2419 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+ 2670 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+ 2741 root      20   0    0.0m   0.0m  0.0  0.0   0:00.04 S  `- kworker/0:1
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184         108          51           2          24          19
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2777000   3090468  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676    1408     93268   2% /dev/shm
+tmpfs              94676     664     94012   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2777000   3090468  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2777000   3090468  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+none             6205744 2777000   3090468  48% /var/lib/docker/aufs/mnt/401fcbb15ac4c69bcda74648ef351e63b9d2063f630c7af7e47e041fbf095180
+none             6205744 2777000   3090468  48% /var/lib/docker/aufs/mnt/f3ca000df91386bd5a581c8992380393901b20ff481b4ac5457deabd3604aee3
+none             6205744 2777000   3090468  48% /var/lib/docker/aufs/mnt/15997a1d25293069290ef8a78ee1fa07a607f25ffbe8c3d419bc5fd3ebbffa86
+none             6205744 2777000   3090468  48% /var/lib/docker/aufs/mnt/96734e18371d73f81f6860520a6c5a8c34338d825d2244a766907436a5710770
+none             6205744 2777000   3090468  48% /var/lib/docker/aufs/mnt/f364991a194faba2a4b6bf8acd8b1c0d6259d0197391e3786206ca4eb8c5d2c5
+none             6205744 2777000   3090468  48% /var/lib/docker/aufs/mnt/0d50ae7883b79b4eb47fa22f8d875ddd5fe0c2235b1d76e24bbe059e0fc9038f
+none             6205744 2777000   3090468  48% /var/lib/docker/aufs/mnt/13777648eb0f9e6659b62986f53afba4838ed9293c147acf2a61b005e19d56f1
+none             6205744 2777000   3090468  48% /var/lib/docker/aufs/mnt/fea454e6890c23b63764a382d3f3596d6ac3ae9b7358ee352e5c96ef8dbcca21
+du
+440	.
+----->>>>> 
++9 sensors
+docker ps
+CONTAINER ID        IMAGE                                      COMMAND                CREATED              STATUS              PORTS                                            NAMES
+4d8a4409715c        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   50 seconds ago       Up 34 seconds       1883/tcp, 8883/tcp                               newsensor9          
+fea454e6890c        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   About a minute ago   Up About a minute   1883/tcp, 8883/tcp                               newsensor8          
+13777648eb0f        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   13 minutes ago       Up 11 minutes       1883/tcp, 8883/tcp                               newsensor7          
+0d50ae7883b7        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   15 minutes ago       Up 15 minutes       1883/tcp, 8883/tcp                               newsensor6          
+f364991a194f        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   15 minutes ago       Up 15 minutes       8883/tcp, 1883/tcp                               newsensor5          
+96734e18371d        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   16 minutes ago       Up 16 minutes       1883/tcp, 8883/tcp                               newsensor4          
+15997a1d2529        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   16 minutes ago       Up 16 minutes       8883/tcp, 1883/tcp                               newsensor3          
+f3ca000df913        mkugel/arch-mosq-new-sensor:latest         "python /root/code/i   17 minutes ago       Up 17 minutes       1883/tcp, 8883/tcp                               newsensor2          
+c4923bb0b56e        mkugel/arch-mosq-python-dashboard:latest   "/bin/bash"            29 hours ago         Up 26 hours         1883/tcp, 8883/tcp, 192.168.1.106:8083->80/tcp   dashboard13         
+401fcbb15ac4        mkugel/arch-mosq-python-sensor:latest      "/bin/bash"            4 days ago           Up 30 minutes       1883/tcp, 8883/tcp                               sensor20            
+eb2a41f68ab5        mkugel/archarm-mosq:latest                 "/bin/bash"            2 weeks ago          Up 35 minutes       0.0.0.0:1883->1883/tcp, 0.0.0.0:8883->8883/tcp   mosqbroker          
+pstree
+systemd-+-2*[agetty]
+        |-avahi-daemon---avahi-daemon
+        |-avahi-dnsconfd
+        |-crond
+        |-dbus-daemon
+        |-dhcpcd
+        |-docker-+-bash---python---python---{python}
+        |        |-bash-+-mosquitto
+        |        |      `-su---bash
+        |        |-bash---python
+        |        |-2*[docker---4*[{docker}]]
+        |        |-docker---10*[{docker}]
+        |        |-8*[python]
+        |        `-35*[{docker}]
+        |-haveged
+        |-ifplugd
+        |-rngd
+        |-sshd-+-sshd---bash---docker---5*[{docker}]
+        |      |-sshd---bash---gather.sh---pstree
+        |      `-sshd---bash---top
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        `-systemd-udevd
+top -n 1 -b
+top - 16:31:04 up 1 day,  5:51,  3 users,  load average: 3.95, 7.74, 6.31
+Tasks:  94 total,   3 running,  91 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  60.5/21.9   82[||||||||||||||||||||||||||||||||||||||||||||         ]
+GiB Mem : 90.7/0.181    [                                                     ]
+GiB Swap:  0.0/0.000    [                                                     ]
+
+  PID USER      PR  NI    VIRT    RES %CPU %MEM     TIME+ S COMMAND
+    1 root      20   0    5.5m   0.8m  0.0  0.4   0:32.46 S systemd
+   79 root      20   0   11.6m   0.4m  0.0  0.2   0:16.04 S  `- systemd-journal
+   98 root      20   0   10.5m   0.3m  0.0  0.2   0:01.32 S  `- systemd-udevd
+  120 root      20   0    3.1m   0.2m  0.0  0.1   0:03.42 S  `- systemd-logind
+  122 dbus      20   0    4.2m   0.3m  0.0  0.2   0:01.33 S  `- dbus-daemon
+  124 root      20   0    1.7m   0.1m  0.0  0.0   0:21.70 S  `- rngd
+  125 avahi     20   0    3.3m   0.3m  0.0  0.1   0:01.55 S  `- avahi-daemon
+  127 avahi     20   0    3.1m   0.2m  0.0  0.1   0:00.00 S      `- avahi-daem+
+  126 root      20   0    2.1m   0.1m  0.0  0.1   0:00.01 S  `- avahi-dnsconfd
+  129 root      20   0    3.0m   0.5m  0.0  0.3   0:08.59 S  `- crond
+  130 root      20   0    6.5m   0.4m  0.0  0.2   0:00.13 S  `- sshd
+ 1134 root      20   0   10.8m   0.6m  0.0  0.3   0:02.90 S      `- sshd
+ 1141 root      20   0    3.3m   0.3m  0.0  0.2   0:00.12 S          `- bash
+ 1240 root      20   0  825.1m   1.3m  0.0  0.7   0:06.30 S              `- do+
+ 1203 root      20   0   10.8m   0.7m  0.0  0.4   0:39.94 S      `- sshd
+ 1207 root      20   0    3.4m   0.3m  0.0  0.2   0:01.81 S          `- bash
+ 2799 root      20   0    3.2m   0.6m  0.0  0.3   0:00.05 S              `- ga+
+ 2813 root      20   0    4.9m   1.4m 17.1  0.7   0:00.18 R                  `+
+ 2618 root      20   0   10.8m   0.8m  0.0  0.5   0:01.33 S      `- sshd
+ 2622 root      20   0    3.4m   0.3m  0.0  0.2   0:00.13 S          `- bash
+ 2626 root      20   0    4.9m   0.8m  0.0  0.5   0:17.39 S              `- top
+  131 root      20   0    1.7m   0.1m  0.0  0.1   1:16.84 S  `- ifplugd
+  132 root      20   0 1066.1m   7.1m  0.0  3.8   1:53.85 S  `- docker
+  979 root      20   0  816.8m   1.2m  0.0  0.6   0:08.63 S      `- docker
+  990 root      20   0    3.1m   0.3m  0.0  0.1   0:00.51 S      `- bash
+ 1292 root      20   0   18.1m   9.3m  0.0  5.0   0:06.44 S          `- python
+ 1294 root      20   0   46.7m  30.5m 36.6 16.5 530:20.73 R              `- py+
+ 1395 root      20   0  865.7m   3.8m  0.0  2.1   0:14.24 S      `- docker
+ 1407 root      20   0  816.8m   1.2m  0.0  0.6   0:01.06 S      `- docker
+ 1417 root      20   0    3.0m   0.2m  0.0  0.1   0:00.33 S      `- bash
+ 1446 root      20   0    4.3m   0.3m  0.0  0.1   0:00.08 S          `- su
+ 1447 1000      20   0    3.0m   0.2m  0.0  0.1   0:00.05 S              `- ba+
+ 1449 1000      20   0    4.5m   0.4m  0.0  0.2   0:07.14 R          `- mosqui+
+ 2049 root      20   0    3.1m   0.3m  0.0  0.1   0:00.41 S      `- bash
+ 2182 root      20   0   11.6m   4.4m  0.0  2.4   0:09.71 S          `- python
+ 2399 root      20   0   11.6m   4.4m  0.0  2.4   0:07.65 S      `- python
+ 2449 root      20   0   11.6m   4.3m  0.0  2.3   0:07.49 S      `- python
+ 2490 root      20   0   11.6m   4.4m  0.0  2.4   0:07.25 S      `- python
+ 2532 root      20   0   11.6m   4.4m  0.0  2.4   0:06.99 S      `- python
+ 2581 root      20   0   11.6m   4.4m  0.0  2.4   0:07.33 S      `- python
+ 2648 root      20   0   11.6m   4.3m  0.0  2.3   0:10.32 S      `- python
+ 2729 root      20   0   11.6m   4.4m  0.0  2.4   0:02.89 S      `- python
+ 2775 root      20   0   11.6m   4.3m  0.0  2.3   0:02.70 S      `- python
+  133 root      20   0    7.4m   3.0m 14.6  1.6   0:54.58 S  `- haveged
+  146 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  147 root      20   0    1.8m   0.1m  0.0  0.0   0:00.02 S  `- agetty
+  249 root      20   0    2.1m   0.1m  0.0  0.1   0:01.00 S  `- dhcpcd
+ 1138 root      20   0    5.1m   0.4m  0.0  0.2   0:01.89 S  `- systemd
+ 1139 root      20   0    8.7m   1.0m  0.0  0.5   0:00.00 S      `- (sd-pam)
+    2 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S kthreadd
+    3 root      20   0    0.0m   0.0m  2.4  0.0   0:25.18 S  `- ksoftirqd/0
+    5 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0H
+    7 root      20   0    0.0m   0.0m  0.0  0.0   3:35.46 S  `- rcu_preempt
+    8 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rcu_bh
+    9 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- rcu_sched
+   10 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- khelper
+   11 root      20   0    0.0m   0.0m  0.0  0.0   0:00.01 S  `- kdevtmpfs
+   12 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- netns
+   13 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- writeback
+   14 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kintegrityd
+   15 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   16 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- crypto
+   17 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kblockd
+   18 root      20   0    0.0m   0.0m  0.0  0.0   0:00.29 S  `- khubd
+   19 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- md
+   21 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- rpciod
+   24 root      20   0    0.0m   0.0m  0.0  0.0   0:00.31 S  `- khungtaskd
+   25 root      20   0    0.0m   0.0m 17.1  0.0  11:35.73 S  `- kswapd0
+   26 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- fsnotify_mark
+   27 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- nfsiod
+   28 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bioset
+   37 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kthrotld
+   38 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQ-0
+   39 root       1 -19    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQr-0
+   40 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- VCHIQs-0
+   41 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- iscsi_eh
+   42 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- dwc_otg
+   43 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- DWC Notificatio
+   44 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- raid5wq
+   45 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpathd
+   46 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kmpath_handlerd
+   48 root      20   0    0.0m   0.0m  0.0  0.0   5:40.97 S  `- mmcqd/0
+   49 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- deferwq
+   51 root      20   0    0.0m   0.0m  0.0  0.0   0:00.59 S  `- jbd2/mmcblk0p6-
+   52 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- ext4-rsv-conver
+  110 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- bcm2708_spi.0
+  189 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- cfg80211
+  344 root       0 -20    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:1H
+  839 root      20   0    0.0m   0.0m  0.0  0.0   0:00.89 S  `- kworker/u2:2
+ 1108 root      20   0    0.0m   0.0m  0.0  0.0   0:43.44 S  `- kworker/0:2
+ 1277 root      20   0    0.0m   0.0m  0.0  0.0   0:05.11 S  `- kworker/u2:1
+ 2419 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/u2:0
+ 2670 root      20   0    0.0m   0.0m  0.0  0.0   0:00.00 S  `- kworker/0:0
+ 2741 root      20   0    0.0m   0.0m  0.0  0.0   0:00.14 S  `- kworker/0:1
+free -m
+              total        used        free      shared  buff/cache   available
+Mem:            184         113          48           2          23          15
+Swap:             0           0           0
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/root        6205744 2777108   3090360  48% /
+devtmpfs           90456       0     90456   0% /dev
+tmpfs              94676    1548     93128   2% /dev/shm
+tmpfs              94676     692     93984   1% /run
+tmpfs              94676       0     94676   0% /sys/fs/cgroup
+tmpfs              94676       0     94676   0% /tmp
+/dev/mmcblk0p5    100808   24970     75839  25% /boot
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/c4923bb0b56e6298b182f1b4a57a1509e004a0899c581720906efb3fc718a5ad
+tmpfs              18936       0     18936   0% /run/user/0
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/eb2a41f68ab501336751d8079e01a3fd65dad7b32d81bdfce29d96fe22c75d6b
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/401fcbb15ac4c69bcda74648ef351e63b9d2063f630c7af7e47e041fbf095180
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/f3ca000df91386bd5a581c8992380393901b20ff481b4ac5457deabd3604aee3
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/15997a1d25293069290ef8a78ee1fa07a607f25ffbe8c3d419bc5fd3ebbffa86
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/96734e18371d73f81f6860520a6c5a8c34338d825d2244a766907436a5710770
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/f364991a194faba2a4b6bf8acd8b1c0d6259d0197391e3786206ca4eb8c5d2c5
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/0d50ae7883b79b4eb47fa22f8d875ddd5fe0c2235b1d76e24bbe059e0fc9038f
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/13777648eb0f9e6659b62986f53afba4838ed9293c147acf2a61b005e19d56f1
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/fea454e6890c23b63764a382d3f3596d6ac3ae9b7358ee352e5c96ef8dbcca21
+none             6205744 2777108   3090360  48% /var/lib/docker/aufs/mnt/4d8a4409715c26bb11be91c68bd63f3cec1e5cb50e2c31f420e99208b535028f
+du
+456	.
+----->>>>> 
