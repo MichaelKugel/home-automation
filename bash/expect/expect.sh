@@ -7,12 +7,14 @@ set user [lindex $argv 1]
 
 set password [lindex $argv 2]
 
+set argumentlist [lindex $argv 3]
+
 spawn ssh "$user\@$ip"
 
 expect "Password:"
 
 send "$password\r";
 
-send "docker ps\r";
+send "docker run " + $argumentlist + "\r";
 
 interact

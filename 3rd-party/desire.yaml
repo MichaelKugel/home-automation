@@ -1,10 +1,10 @@
 infrastructure:
   host:
-    - ["192.168.1.110"]
+    - ["10.37.85.223"]
 
 information:
-    - ["service/safety/smoke-alarm/value", "safety/smoke-alarm/status"]
+    - ["service/safety/smoke-alarm/2/value", "service/safety/smoke-alarm/2/status"]
 
 control:
-    - ["service/safety/smoke-alarm/power"]
+    - ["service/safety/smoke-alarm/2/power"]
 
