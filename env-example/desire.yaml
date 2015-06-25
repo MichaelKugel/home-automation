@@ -1,0 +1,26 @@
+infrastructure:
+  host:
+    - ["10.37.85.223"]
+
+container:
+  name:
+   - ["sixthpx"]
+
+code:
+  folder:
+    - ["/root/code/home-automation/3rd-party"]
+  source:
+    - ["relay.py"]
+  command:
+    - ["python"]
+
+topic:
+  information:
+    - ["service/safety/smoke-alarm/7/value"]
+  status:
+    - ["service/safety/smoke-alarm/7/status"]
+  relay:
+    - ["service/safety/smoke-alarm/7/relayed"]
+  control:
+    - ["service/safety/smoke-alarm/7/power"]
+
