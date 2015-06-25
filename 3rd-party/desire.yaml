@@ -16,8 +16,8 @@ code:
 
 topics:
   information:
-    - ["service/safety/smoke-alarm/2/value", "service/safety/smoke-alarm/2/status"]
+    - ["service/safety/smoke-alarm/4/value", "service/safety/smoke-alarm/4/status"]
 
   control:
-    - ["service/safety/smoke-alarm/2/power"]
+    - ["service/safety/smoke-alarm/4/power"]
 

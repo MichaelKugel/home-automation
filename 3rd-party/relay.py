@@ -5,9 +5,9 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import time
 
-information_topic = "information/service/safety/smoke-alarm/1/value"
-control_topic = "control/service/safety/smoke-alarm"
-relayed_topic = "information/service/safety/smoke-alarm/1/relayed"
+information_topic = "information/service/safety/smoke-alarm/4/value"
+control_topic = "control/service/safety/smoke-alarm/4/power"
+relayed_topic = "information/service/safety/smoke-alarm/4/relayed"
 
 relay = "ON"
 host = "10.37.85.223"
