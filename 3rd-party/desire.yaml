@@ -4,7 +4,7 @@ infrastructure:
 
 container:
   name:
-    - ["fifthpx"]
+    - ["ninthpx"]
 
 code:
   folder:
@@ -16,8 +16,8 @@ code:
 
 topics:
   information:
-    - ["service/safety/smoke-alarm/4/value", "service/safety/smoke-alarm/4/status"]
+    - ["service/safety/smoke-alarm/9/value", "service/safety/smoke-alarm/9/status"]
 
   control:
-    - ["service/safety/smoke-alarm/4/power"]
+    - ["service/safety/smoke-alarm/9/power"]
 

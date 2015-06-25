@@ -102,7 +102,7 @@ if (str(sys.argv[1]) == 'desire.yaml'):
 
 # Concatenate environmental variable strings
 
-  environmentals = ' -e '+ '"INFORMATION_TOPIC=' + information_topic + ' -e '+ '"STATUS_TOPIC=' + status_topic + '-e '+ '"RELAYED_TOPIC=' + relayed_topic + ' -e '+ '"CONTROL_TOPIC=' + status_topic + ' '
+  environmentals = ' -e '+ '"INFORMATION_TOPIC=' + information_topic + ' -e '+ '"STATUS_TOPIC=' + status_topic + ' -e '+ '"RELAYED_TOPIC=' + relayed_topic + ' -e '+ '"CONTROL_TOPIC=' + status_topic + ' '
 
   print environmentals
 
