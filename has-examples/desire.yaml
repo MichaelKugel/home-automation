@@ -1,0 +1,10 @@
+infrastructure:
+  host:
+    - ["10.37.85.223"]
+
+information:
+    - ["service/safety/smoke-alarm/2/value", "service/safety/smoke-alarm/2/status"]
+
+control:
+    - ["service/safety/smoke-alarm/2/power"]
+
