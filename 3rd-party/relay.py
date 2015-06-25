@@ -4,9 +4,10 @@
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import time
+import os
 
 information_topic = os.getenv('INFORMATION_TOPIC', "information/service/safety/smoke-alarm/0/value")
-control_topic = os.getenv('CONTROL_TOPIC', "control/service/safety/smoke-alarm/0/power"
+control_topic = os.getenv('CONTROL_TOPIC', "control/service/safety/smoke-alarm/0/power")
 relayed_topic = os.getenv('RELAYED_TOPIC', "information/service/safety/smoke-alarm/0/relayed")
 
 relay = "ON"
