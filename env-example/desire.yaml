@@ -4,7 +4,11 @@ infrastructure:
 
 container:
   name:
-   - ["eigthpx"]
+    - ["smoke-alarm-relay-1"]
+  type:
+    - ["relay"]
+  tier:
+    - ["2"]
 
 code:
   folder:
@@ -16,11 +20,11 @@ code:
 
 topic:
   information:
-    - ["service/safety/smoke-alarm/12/value"]
+    - ["service/safety/smoke-alarm/13/value"]
   status:
-    - ["service/safety/smoke-alarm/12/status"]
+    - ["service/safety/smoke-alarm/13/status"]
   relay:
-    - ["service/safety/smoke-alarm/12/relayed"]
+    - ["service/safety/smoke-alarm/13/relayed"]
   control:
-    - ["service/safety/smoke-alarm/12/power"]
+    - ["service/safety/smoke-alarm/13/power"]
 
