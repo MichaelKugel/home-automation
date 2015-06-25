@@ -36,10 +36,10 @@ def on_message(client, userdata, msg):
     print (msg.topic)
     if (msg.topic == control_topic):
         print (msg.payload)
-        if (msg.payload == "OFF"):
+        if ("OFF" in str(msg.payload)):
             relay == "OFF"
             client.unsubscribe(information_topic)
-        if (msg.payload == "ON"):
+        if ("ON" in str(msg.payload)):
             relay == "ON"
             client.subscribe(information_topic)
 

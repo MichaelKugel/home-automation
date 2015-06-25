@@ -7,8 +7,6 @@ from pexpect import pxssh as pxssh
 import pexpect
 import yaml
 
-# containername='testpx'
-
 # print 'Number of arguments:', len(sys.argv), 'arguments.'
 # print 'Argument List:', str(sys.argv[1])
 
@@ -26,34 +24,29 @@ if (str(sys.argv[1]) == 'desire.yaml'):
   print "Closing YAML file"
   f.close()
 
-  #with open("desire.yaml", 'r') as stream:
-  #  print(yaml.load(stream))
-
 # Variable Assignments
 
-  has_host = desire_dictionary['infrastructure']['host'][0]
+  has_host = ''.join(desire_dictionary['infrastructure']['host'][0])
   print "Assigning host to be:"
   print(desire_dictionary['infrastructure']['host'][0])
 
-  containername = desire_dictionary['infrastructure']['host'][0]
+  containername = ''.join(desire_dictionary['infrastructure']['host'][0])
   print "Assgning container name to be:"
   print(desire_dictionary['container']['name'][0])
 
-  codefolder = desire_dictionary['code']['folder'][0]
+  codefolder = ''.join(desire_dictionary['code']['folder'][0])
   print "Assigning code folder to be:"
   print(desire_dictionary['code']['folder'][0])
 
-  codesource = desire_dictionary['code']['source'][0] 
+  codesource = ''.join(desire_dictionary['code']['source'][0])
   print "Assigning code source file to be:"
   print(desire_dictionary['code']['source'][0])
 
-  codecommand = desire_dictionary['code']['command'][0]
+  codecommand = ''.join(desire_dictionary['code']['command'][0])
   print "Assigning code interpreter to be:"
   print(desire_dictionary['code']['command'][0])
 
   print "Assigning topics (MOM Interfaces - not implemented yet!)
-
- #  os.system("expect ../bash/expect/expect.sh 10.37.85.223 root root ' -it --name firstexpect /mkugel/archmosqextpysensor /bin/bash'") 
 
 # Remote Execution of Docker command using pexpect via ssh
   
@@ -66,8 +59,6 @@ if (str(sys.argv[1]) == 'desire.yaml'):
 
   p = pxssh.pxssh()
   p.login(has_host, 'root', 'root')
-
-  # p.sendline('docker run -it --name secondpx mkugel/archmosqextpysensor /bin/bash')
 
   p.sendline(dockercommand)
 
