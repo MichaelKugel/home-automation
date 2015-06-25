@@ -5,9 +5,9 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import time
 
-information_topic = "information/service/safety/smoke-alarm"
+information_topic = "information/service/safety/smoke-alarm/1/value"
 control_topic = "control/service/safety/smoke-alarm"
-relayed_topic = "information/service/safety/smoke-alarm/relayed"
+relayed_topic = "information/service/safety/smoke-alarm/1/relayed"
 
 relay = "ON"
 host = "10.37.85.223"
@@ -33,9 +33,9 @@ def on_message(client, userdata, msg):
 
 # Relay switches based on ON/OFF message sent to control topic.
 
-    print msg.topic
+    print (msg.topic)
     if (msg.topic == control_topic):
-        print msg.payload
+        print (msg.payload)
         if (msg.payload == "OFF"):
             relay == "OFF"
             client.unsubscribe(information_topic)
