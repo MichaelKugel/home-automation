@@ -91,18 +91,18 @@ if (str(sys.argv[1]) == 'desire.yaml'):
 
   print "Assigning topics (MOM Interfaces)"
 
-  control_topic = 'control/'.join(desire_dictionary['topic']['control'][0])
-  information_topic = 'information/'.join(desire_dictionary['topic']['information'][0])
+  control_topic = 'control/'+ ''.join(desire_dictionary['topic']['control'][0])
+  information_topic = 'information/'+ ''.join(desire_dictionary['topic']['information'][0])
   
   #print 'control/'.join(desire_dictionary['topic']['control'][0])
   #print 'information/'.join(desire_dictionary['topic']['information'][0])
 
-  relayed_topic = 'information/'.join(desire_dictionary['topic']['relayed'][0])
-  status_topic = 'information/'.join(desire_dictionary['topic']['status'][0])
+  relayed_topic = 'information/' + ''.join(desire_dictionary['topic']['relayed'][0])
+  status_topic = 'information/' + ''.join(desire_dictionary['topic']['status'][0])
 
 # Concatenate environmental variable strings
 
-  environmentals = ' -e '+ '"INFORMATION_TOPIC=' + information_topic + ' -e '+ '"STATUS_TOPIC=' + status_topic + ' -e '+ '"RELAYED_TOPIC=' + relayed_topic + ' -e '+ '"CONTROL_TOPIC=' + status_topic + ' '
+  environmentals = ' -e '+ '"INFORMATION_TOPIC=' + information_topic +'"'+ ' -e '+ '"STATUS_TOPIC=' + status_topic +'"'+ ' -e '+ '"RELAYED_TOPIC=' + relayed_topic +'"'+ ' -e '+ '"CONTROL_TOPIC=' + control_topic +'"'+ ' '
 
   print environmentals
 
