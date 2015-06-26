@@ -15,7 +15,7 @@ validated = 0
 control_topic = 'default'
 information_topic = 'default'
 status_topic = 'default'
-relay_topic = 'default'
+relayed_topic = 'default'
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
@@ -97,7 +97,7 @@ if (str(sys.argv[1]) == 'desire.yaml'):
   #print 'control/'.join(desire_dictionary['topic']['control'][0])
   #print 'information/'.join(desire_dictionary['topic']['information'][0])
 
-  relayed_topic = 'information/'.join(desire_dictionary['topic']['relay'][0])
+  relayed_topic = 'information/'.join(desire_dictionary['topic']['relayed'][0])
   status_topic = 'information/'.join(desire_dictionary['topic']['status'][0])
 
 # Concatenate environmental variable strings
