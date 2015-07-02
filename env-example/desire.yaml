@@ -4,7 +4,7 @@ infrastructure:
 
 container:
   name:
-    - ["smoke-relay-1"]
+    - ["smoke-relay-2"]
   type:
     - ["relay"]
   tier:
@@ -20,11 +20,11 @@ code:
 
 topic:
   information:
-    - ["service/safety/smoke-alarm/13/value"]
+    - ["service/safety/smoke-alarm/2/value"]
   status:
-    - ["service/safety/smoke-alarm/13/status"]
+    - ["service/safety/smoke-alarm/2/status"]
   relayed:
-    - ["service/safety/smoke-alarm/13/relayed"]
+    - ["service/safety/smoke-alarm/2/relayed"]
   control:
-    - ["service/safety/smoke-alarm/13/power"]
+    - ["service/safety/smoke-alarm/2/power"]
 
